@@ -1,0 +1,44 @@
+[
+  {
+    "symbol": "BTC_USDC",
+    "lastPrice": "30123.45",
+    "bidPrice": "30120.00",
+    "askPrice": "30125.00",
+    "volume24h": "15234.5678",
+    "volumeQuote24h": "456789012.34",
+    "highPrice24h": "30500.00",
+    "lowPrice24h": "29800.00",
+    "priceChange24h": "323.45",
+    "priceChangePercent24h": "1.08",
+    "trades24h": 12543,
+    "timestamp": 1694687692980
+  },
+  {
+    "symbol": "SOL_USDC",
+    "lastPrice": "19.45",
+    "bidPrice": "19.44",
+    "askPrice": "19.46",
+    "volume24h": "234567.89",
+    "volumeQuote24h": "4567890.12",
+    "highPrice24h": "20.50",
+    "lowPrice24h": "19.00",
+    "priceChange24h": "-0.55",
+    "priceChangePercent24h": "-2.75",
+    "trades24h": 8765,
+    "timestamp": 1694687692980
+  },
+  {
+    "symbol": "ETH_USDC",
+    "lastPrice": "1725.50",
+    "bidPrice": "1725.00",
+    "askPrice": "1726.00",
+    "volume24h": "45678.9012",
+    "volumeQuote24h": "78901234.56",
+    "highPrice24h": "1750.00",
+    "lowPrice24h": "1700.00",
+    "priceChange24h": "15.50",
+    "priceChangePercent24h": "0.91",
+    "trades24h": 9876,
+    "timestamp": 1694687692980
+  }
+]

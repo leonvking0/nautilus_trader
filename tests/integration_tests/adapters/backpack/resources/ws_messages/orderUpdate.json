@@ -1,0 +1,21 @@
+{
+  "stream": "account.orderUpdate",
+  "data": {
+    "e": "orderAccepted",
+    "E": 1694687692980000,
+    "s": "BTC_USDC",
+    "c": 123,
+    "S": "Buy",
+    "o": "LIMIT",
+    "f": "GTC",
+    "q": "0.1000",
+    "p": "30000.00",
+    "X": "New",
+    "i": "1111343026172067",
+    "z": "0.0000",
+    "Z": "0.00",
+    "V": "RejectTaker",
+    "T": 1694687692989999,
+    "O": "USER"
+  }
+}

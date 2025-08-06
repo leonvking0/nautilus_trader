@@ -1,0 +1,33 @@
+{
+  "balances": [
+    {
+      "symbol": "USDC",
+      "total": "10000.00",
+      "available": "8500.00",
+      "locked": "1500.00",
+      "staked": "0.00"
+    },
+    {
+      "symbol": "BTC",
+      "total": "0.5000",
+      "available": "0.4500",
+      "locked": "0.0500",
+      "staked": "0.00"
+    },
+    {
+      "symbol": "SOL",
+      "total": "100.00",
+      "available": "95.00",
+      "locked": "5.00",
+      "staked": "0.00"
+    },
+    {
+      "symbol": "ETH",
+      "total": "2.5000",
+      "available": "2.0000",
+      "locked": "0.5000",
+      "staked": "0.00"
+    }
+  ],
+  "timestamp": 1694687692980
+}
