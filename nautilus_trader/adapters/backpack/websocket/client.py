@@ -17,6 +17,8 @@
 
 import asyncio
 import json
+import time
+from collections import deque
 from typing import Any, Callable
 
 import aiohttp
@@ -83,6 +85,16 @@ class BackpackWebSocketClient:
         # Heartbeat
         self._heartbeat_task: asyncio.Task | None = None
         self._last_pong: int = 0
+        
+        # Latency monitoring and metrics
+        self._latency_buffer: deque[float] = deque(maxlen=1000)  # Rolling window of latencies
+        self._message_count: int = 0
+        self._bytes_received: int = 0
+        self._bytes_sent: int = 0
+        self._error_count: int = 0
+        self._reconnect_count: int = 0
+        self._last_metrics_log_time: float = time.time()
+        self._message_timestamps: dict[str, float] = {}  # For tracking round-trip times
 
     async def connect(self) -> None:
         """Connect to the WebSocket server."""
@@ -159,6 +171,7 @@ class BackpackWebSocketClient:
             return
             
         self._log.info(f"Attempting to reconnect connection {conn_id}...")
+        self._reconnect_count += 1
         
         # Close existing connection
         if conn_id in self._connections:
@@ -223,12 +236,30 @@ class BackpackWebSocketClient:
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
+                        # Track metrics
+                        receive_time = time.time()
+                        self._message_count += 1
+                        self._bytes_received += len(msg.data)
+                        
                         data = json.loads(msg.data)
+                        
+                        # Track latency for responses to our requests
+                        if "id" in data and data["id"] in self._message_timestamps:
+                            latency = (receive_time - self._message_timestamps[data["id"]]) * 1000  # ms
+                            self._latency_buffer.append(latency)
+                            del self._message_timestamps[data["id"]]
+                        
                         await self._process_message(conn_id, data)
+                        
+                        # Log metrics periodically
+                        await self._log_metrics_if_needed()
+                        
                     except json.JSONDecodeError as e:
+                        self._error_count += 1
                         self._log.error(f"Failed to parse message on connection {conn_id}: {e}")
                         
                 elif msg.type == aiohttp.WSMsgType.ERROR:
+                    self._error_count += 1
                     self._log.error(f"WebSocket error on connection {conn_id}: {ws.exception()}")
                     
                 elif msg.type == aiohttp.WSMsgType.CLOSED:
@@ -236,6 +267,7 @@ class BackpackWebSocketClient:
                     break
                     
         except Exception as e:
+            self._error_count += 1
             self._log.error(f"Error handling messages on connection {conn_id}: {e}")
             
         # Reconnect if still running
@@ -320,8 +352,18 @@ class BackpackWebSocketClient:
             return
             
         try:
-            await ws.send_str(json.dumps(message))
+            # Add message ID for latency tracking if not present
+            if "id" not in message:
+                message["id"] = str(int(time.time() * 1000000))  # microsecond precision
+            
+            # Track send time for latency measurement
+            self._message_timestamps[message["id"]] = time.time()
+            
+            msg_str = json.dumps(message)
+            self._bytes_sent += len(msg_str)
+            await ws.send_str(msg_str)
         except Exception as e:
+            self._error_count += 1
             self._log.error(f"Failed to send message on connection {conn_id}: {e}")
             self._reconnect_tasks[conn_id] = asyncio.create_task(self._reconnect_connection(conn_id))
 
@@ -464,6 +506,69 @@ class BackpackWebSocketClient:
         }
         
         await self._send_message_on_connection(conn_id, message)
+    
+    async def _log_metrics_if_needed(self) -> None:
+        """Log metrics periodically."""
+        current_time = time.time()
+        if current_time - self._last_metrics_log_time >= 60:  # Log every 60 seconds
+            self._last_metrics_log_time = current_time
+            
+            # Calculate statistics
+            avg_latency = sum(self._latency_buffer) / len(self._latency_buffer) if self._latency_buffer else 0
+            min_latency = min(self._latency_buffer) if self._latency_buffer else 0
+            max_latency = max(self._latency_buffer) if self._latency_buffer else 0
+            
+            # Calculate message rate
+            elapsed = current_time - (current_time - 60)
+            msg_rate = self._message_count / elapsed if elapsed > 0 else 0
+            
+            self._log.info(
+                f"WebSocket Metrics: "
+                f"Messages={self._message_count}, "
+                f"Rate={msg_rate:.1f}/s, "
+                f"Latency(ms): avg={avg_latency:.2f}, min={min_latency:.2f}, max={max_latency:.2f}, "
+                f"Bytes: rx={self._bytes_received:,}, tx={self._bytes_sent:,}, "
+                f"Errors={self._error_count}, "
+                f"Reconnects={self._reconnect_count}, "
+                f"Connections={len(self._connections)}"
+            )
+    
+    def get_metrics(self) -> dict[str, Any]:
+        """
+        Get current WebSocket metrics.
+        
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary containing current metrics.
+            
+        """
+        latencies = list(self._latency_buffer)
+        return {
+            "message_count": self._message_count,
+            "bytes_received": self._bytes_received,
+            "bytes_sent": self._bytes_sent,
+            "error_count": self._error_count,
+            "reconnect_count": self._reconnect_count,
+            "connection_count": len(self._connections),
+            "subscription_count": sum(len(subs) for subs in self._subscriptions.values()),
+            "latency_ms": {
+                "avg": sum(latencies) / len(latencies) if latencies else 0,
+                "min": min(latencies) if latencies else 0,
+                "max": max(latencies) if latencies else 0,
+                "samples": len(latencies),
+            },
+        }
+    
+    def reset_metrics(self) -> None:
+        """Reset all metrics counters."""
+        self._latency_buffer.clear()
+        self._message_count = 0
+        self._bytes_received = 0
+        self._bytes_sent = 0
+        self._error_count = 0
+        self._reconnect_count = 0
+        self._message_timestamps.clear()
 
     async def subscribe_ticker(self, symbol: str) -> None:
         """Subscribe to ticker updates for a symbol."""

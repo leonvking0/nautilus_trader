@@ -56,11 +56,11 @@ class BackpackWsOrderUpdate(msgspec.Struct, frozen=True):
     r: bool | None = None  # Reduce only
 
 
-class BackpackWsPositionUpdate(msgspec.Struct, frozen=True):
+class BackpackWsPositionUpdate(msgspec.Struct, frozen=True, kw_only=True):
     """WebSocket position update message."""
 
-    e: str | None = None  # Event type
     E: int  # Event time in microseconds
+    e: str | None = None  # Event type
     s: str  # Symbol
     b: float  # Break even price
     B: float  # Entry price
@@ -90,3 +90,25 @@ class BackpackWsUnsubscribeRequest(msgspec.Struct, frozen=True):
 
     method: str
     params: list[str]
+
+
+class BackpackWsDepthUpdate(msgspec.Struct, frozen=True):
+    """WebSocket depth (order book) update message."""
+    
+    symbol: str
+    U: int  # First update ID in event
+    u: int  # Last update ID in event
+    b: list[list[str]]  # Bids [price, quantity]
+    a: list[list[str]]  # Asks [price, quantity]
+    timestamp: int
+
+
+class BackpackWsTradeUpdate(msgspec.Struct, frozen=True):
+    """WebSocket trade update message."""
+    
+    symbol: str
+    id: int
+    price: str
+    quantity: str
+    timestamp: int
+    is_buyer_maker: bool
