@@ -49,6 +49,8 @@ class BackpackWebSocketClient:
 
     """
 
+    MAX_SUBSCRIPTIONS_PER_CONNECTION = 200  # Backpack limit
+
     def __init__(
         self,
         api_key: str | None = None,
@@ -65,13 +67,18 @@ class BackpackWebSocketClient:
         
         # WebSocket state
         self._session: aiohttp.ClientSession | None = None
-        self._ws: aiohttp.ClientWebSocketResponse | None = None
+        self._connections: dict[int, aiohttp.ClientWebSocketResponse] = {}  # Connection pool
         self._running = False
-        self._reconnect_task: asyncio.Task | None = None
+        self._reconnect_tasks: dict[int, asyncio.Task] = {}
         
         # Subscription management
-        self._subscriptions: set[str] = set()
+        self._subscriptions: dict[int, set[str]] = {}  # Connection ID -> subscriptions
+        self._stream_to_connection: dict[str, int] = {}  # Stream -> connection ID
         self._authenticated = False
+        self._next_connection_id = 0
+        
+        # Message sequence tracking
+        self._last_update_ids: dict[str, int] = {}  # Stream -> last update ID
         
         # Heartbeat
         self._heartbeat_task: asyncio.Task | None = None
@@ -86,76 +93,80 @@ class BackpackWebSocketClient:
         self._running = True
         self._session = aiohttp.ClientSession()
         
-        try:
-            await self._connect_ws()
-            
-            # Start heartbeat
-            self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
-            
-            # Authenticate if credentials provided
-            if self._api_key and self._api_secret:
-                await self._authenticate()
-                
-            # Restore subscriptions
-            if self._subscriptions:
-                await self._restore_subscriptions()
-                
-        except Exception as e:
-            self._log.error(f"Failed to connect WebSocket: {e}")
-            await self._reconnect()
+        # Create initial connection
+        await self._create_connection(0)
 
     async def disconnect(self) -> None:
         """Disconnect from the WebSocket server."""
         self._running = False
         
-        # Cancel tasks
+        # Cancel all tasks
         if self._heartbeat_task:
             self._heartbeat_task.cancel()
             self._heartbeat_task = None
             
-        if self._reconnect_task:
-            self._reconnect_task.cancel()
-            self._reconnect_task = None
+        for task in self._reconnect_tasks.values():
+            task.cancel()
+        self._reconnect_tasks.clear()
         
-        # Close WebSocket
-        if self._ws:
-            await self._ws.close()
-            self._ws = None
-            
+        # Close all WebSocket connections
+        for conn_id, ws in self._connections.items():
+            await ws.close()
+        self._connections.clear()
+        
         # Close session
         if self._session:
             await self._session.close()
             self._session = None
             
-        self._log.info("WebSocket disconnected")
+        self._log.info("All WebSocket connections disconnected")
 
-    async def _connect_ws(self) -> None:
-        """Establish WebSocket connection."""
+    async def _create_connection(self, conn_id: int) -> None:
+        """Create a new WebSocket connection."""
         if not self._session:
-            raise RuntimeError("Session not initialized")
+            self._session = aiohttp.ClientSession()
             
-        self._ws = await self._session.ws_connect(
-            self._base_url,
-            heartbeat=30,
-            receive_timeout=60,
-        )
-        
-        self._log.info(f"WebSocket connected to {self._base_url}")
-        
-        # Start message handler
-        asyncio.create_task(self._handle_messages())
+        try:
+            ws = await self._session.ws_connect(
+                self._base_url,
+                heartbeat=30,
+                receive_timeout=60,
+            )
+            
+            self._connections[conn_id] = ws
+            self._subscriptions[conn_id] = set()
+            
+            self._log.info(f"WebSocket connection {conn_id} established to {self._base_url}")
+            
+            # Start message handler for this connection
+            asyncio.create_task(self._handle_messages(conn_id))
+            
+            # Start heartbeat if this is the first connection
+            if conn_id == 0 and not hasattr(self, '_heartbeat_task'):
+                self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+            
+            # Authenticate if credentials provided
+            if self._api_key and self._api_secret:
+                await self._authenticate_connection(conn_id)
+                
+        except Exception as e:
+            self._log.error(f"Failed to create connection {conn_id}: {e}")
+            self._reconnect_tasks[conn_id] = asyncio.create_task(self._reconnect_connection(conn_id))
 
-    async def _reconnect(self) -> None:
-        """Reconnect to the WebSocket server."""
+    async def _reconnect_connection(self, conn_id: int) -> None:
+        """Reconnect a specific WebSocket connection."""
         if not self._running:
             return
             
-        self._log.info("Attempting to reconnect WebSocket...")
+        self._log.info(f"Attempting to reconnect connection {conn_id}...")
         
         # Close existing connection
-        if self._ws:
-            await self._ws.close()
-            self._ws = None
+        if conn_id in self._connections:
+            await self._connections[conn_id].close()
+            del self._connections[conn_id]
+        
+        # Save subscriptions for restoration
+        saved_subs = self._subscriptions.get(conn_id, set()).copy()
         
         # Exponential backoff
         delay = 1
@@ -164,25 +175,21 @@ class BackpackWebSocketClient:
         while self._running:
             try:
                 await asyncio.sleep(delay)
-                await self._connect_ws()
+                await self._create_connection(conn_id)
                 
-                # Re-authenticate if needed
-                if self._api_key and self._api_secret:
-                    await self._authenticate()
+                # Restore subscriptions for this connection
+                for stream in saved_subs:
+                    await self._subscribe_on_connection(conn_id, stream)
                     
-                # Restore subscriptions
-                if self._subscriptions:
-                    await self._restore_subscriptions()
-                    
-                self._log.info("WebSocket reconnected successfully")
+                self._log.info(f"Connection {conn_id} reconnected successfully")
                 break
                 
             except Exception as e:
-                self._log.error(f"Reconnection failed: {e}")
+                self._log.error(f"Reconnection {conn_id} failed: {e}")
                 delay = min(delay * 2, max_delay)
 
-    async def _authenticate(self) -> None:
-        """Authenticate the WebSocket connection."""
+    async def _authenticate_connection(self, conn_id: int) -> None:
+        """Authenticate a specific WebSocket connection."""
         if not self._api_key or not self._api_secret:
             return
             
@@ -190,76 +197,74 @@ class BackpackWebSocketClient:
         timestamp = int(asyncio.get_event_loop().time() * 1000)
         window = 5000
         
+        signature_str = f"instruction=subscribe&timestamp={timestamp}&window={window}"
         signature = sign_request(
             api_secret=self._api_secret,
-            method="subscribe",
-            params={},
-            timestamp=timestamp,
-            window=window,
+            signature_str=signature_str,
         )
         
+        # Per Backpack docs, authentication uses subscription format
         auth_message = {
-            "method": "auth",
-            "params": {
-                "apiKey": self._api_key,
-                "signature": signature,
-                "timestamp": timestamp,
-                "window": window,
-            },
+            "method": "SUBSCRIBE",
+            "params": ["account.orderUpdate"],
+            "signature": [self._api_key, signature, str(timestamp), str(window)],
         }
         
-        await self._send_message(auth_message)
-        self._log.info("Authentication message sent")
+        await self._send_message_on_connection(conn_id, auth_message)
+        self._log.info(f"Authentication sent on connection {conn_id}")
 
-    async def _handle_messages(self) -> None:
-        """Handle incoming WebSocket messages."""
-        if not self._ws:
+    async def _handle_messages(self, conn_id: int) -> None:
+        """Handle incoming WebSocket messages for a specific connection."""
+        ws = self._connections.get(conn_id)
+        if not ws:
             return
             
         try:
-            async for msg in self._ws:
+            async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
                         data = json.loads(msg.data)
-                        await self._process_message(data)
+                        await self._process_message(conn_id, data)
                     except json.JSONDecodeError as e:
-                        self._log.error(f"Failed to parse message: {e}")
+                        self._log.error(f"Failed to parse message on connection {conn_id}: {e}")
                         
                 elif msg.type == aiohttp.WSMsgType.ERROR:
-                    self._log.error(f"WebSocket error: {self._ws.exception()}")
+                    self._log.error(f"WebSocket error on connection {conn_id}: {ws.exception()}")
                     
                 elif msg.type == aiohttp.WSMsgType.CLOSED:
-                    self._log.warning("WebSocket connection closed")
+                    self._log.warning(f"WebSocket connection {conn_id} closed")
                     break
                     
         except Exception as e:
-            self._log.error(f"Error handling messages: {e}")
+            self._log.error(f"Error handling messages on connection {conn_id}: {e}")
             
         # Reconnect if still running
         if self._running:
-            await self._reconnect()
+            self._reconnect_tasks[conn_id] = asyncio.create_task(self._reconnect_connection(conn_id))
 
-    async def _process_message(self, data: dict) -> None:
-        """Process a WebSocket message."""
+    async def _process_message(self, conn_id: int, data: dict) -> None:
+        """Process a WebSocket message from a specific connection."""
         # Handle different message types
         if "stream" in data:
-            # Market data stream
-            await self._handle_stream_message(data)
+            # Market data stream - validate sequence if applicable
+            stream = data.get("stream", "")
+            if await self._validate_sequence(stream, data):
+                await self._handle_stream_message(data)
             
-        elif "method" in data:
-            # Response to method call
-            await self._handle_method_response(data)
+        elif "result" in data:
+            # Response to subscription
+            self._log.debug(f"Subscription response on connection {conn_id}: {data}")
             
         elif "error" in data:
             # Error message
-            self._log.error(f"WebSocket error: {data['error']}")
+            self._log.error(f"WebSocket error on connection {conn_id}: {data}")
             
         elif "pong" in data:
             # Pong response
             self._last_pong = int(asyncio.get_event_loop().time() * 1000)
             
         else:
-            # Unknown message type
+            # Pass to handler
             if self._handler:
                 self._handler(data)
 
@@ -307,67 +312,129 @@ class BackpackWebSocketClient:
             else:
                 self._log.error(f"Unsubscription failed: {result}")
 
-    async def _send_message(self, message: dict) -> None:
-        """Send a message to the WebSocket server."""
-        if not self._ws:
-            self._log.warning("WebSocket not connected")
+    async def _send_message_on_connection(self, conn_id: int, message: dict) -> None:
+        """Send a message on a specific WebSocket connection."""
+        ws = self._connections.get(conn_id)
+        if not ws:
+            self._log.warning(f"Connection {conn_id} not available")
             return
             
         try:
-            await self._ws.send_str(json.dumps(message))
+            await ws.send_str(json.dumps(message))
         except Exception as e:
-            self._log.error(f"Failed to send message: {e}")
-            await self._reconnect()
+            self._log.error(f"Failed to send message on connection {conn_id}: {e}")
+            self._reconnect_tasks[conn_id] = asyncio.create_task(self._reconnect_connection(conn_id))
 
     async def _heartbeat_loop(self) -> None:
-        """Send periodic heartbeat messages."""
+        """Send periodic heartbeat messages to all connections."""
         while self._running:
             try:
                 await asyncio.sleep(30)
                 
-                # Send ping
-                await self._send_message({"ping": int(asyncio.get_event_loop().time() * 1000)})
+                # Send ping to all connections
+                ping_msg = {"ping": int(asyncio.get_event_loop().time() * 1000)}
+                for conn_id in list(self._connections.keys()):
+                    await self._send_message_on_connection(conn_id, ping_msg)
                 
                 # Check for stale connection
                 if self._last_pong > 0:
                     elapsed = int(asyncio.get_event_loop().time() * 1000) - self._last_pong
                     if elapsed > 90000:  # 90 seconds
-                        self._log.warning("Connection appears stale, reconnecting...")
-                        await self._reconnect()
+                        self._log.warning("Connections appear stale, checking all...")
+                        for conn_id in list(self._connections.keys()):
+                            if conn_id not in self._reconnect_tasks:
+                                self._reconnect_tasks[conn_id] = asyncio.create_task(
+                                    self._reconnect_connection(conn_id)
+                                )
                         
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 self._log.error(f"Heartbeat error: {e}")
 
-    async def _restore_subscriptions(self) -> None:
-        """Restore subscriptions after reconnection."""
-        for stream in self._subscriptions.copy():
-            await self.subscribe(stream)
+    async def _validate_sequence(self, stream: str, data: dict) -> bool:
+        """Validate message sequence for depth updates."""
+        if "depth" not in stream:
+            return True  # Only validate depth streams
+            
+        # Get update IDs from the message
+        first_update = data.get("data", {}).get("U")
+        last_update = data.get("data", {}).get("u")
+        
+        if first_update is None or last_update is None:
+            return True  # No sequence info
+            
+        # Check sequence
+        if stream in self._last_update_ids:
+            expected = self._last_update_ids[stream] + 1
+            if first_update != expected:
+                self._log.warning(
+                    f"Sequence gap detected in {stream}: expected {expected}, got {first_update}"
+                )
+                # Could trigger a snapshot request here
+                return False
+                
+        self._last_update_ids[stream] = last_update
+        return True
 
-    async def subscribe(self, stream: str, **params) -> None:
+    async def subscribe(self, stream: str) -> None:
         """
         Subscribe to a data stream.
         
         Parameters
         ----------
         stream : str
-            The stream name (e.g., "ticker", "trades", "depth").
-        **params
-            Additional parameters for the subscription.
+            The stream name in Backpack format (e.g., "ticker.SOL_USDC").
             
         """
-        self._subscriptions.add(stream)
+        # Find or create a connection with capacity
+        conn_id = await self._get_available_connection()
         
+        # Subscribe on the selected connection
+        await self._subscribe_on_connection(conn_id, stream)
+    
+    async def _get_available_connection(self) -> int:
+        """Get a connection with available subscription capacity."""
+        # Find existing connection with capacity
+        for conn_id, subs in self._subscriptions.items():
+            if len(subs) < self.MAX_SUBSCRIPTIONS_PER_CONNECTION:
+                return conn_id
+                
+        # Need to create a new connection
+        conn_id = self._next_connection_id
+        self._next_connection_id += 1
+        await self._create_connection(conn_id)
+        return conn_id
+    
+    async def _subscribe_on_connection(self, conn_id: int, stream: str) -> None:
+        """Subscribe to a stream on a specific connection."""
+        if conn_id not in self._connections:
+            self._log.warning(f"Connection {conn_id} not available for subscription")
+            return
+            
+        # Track subscription
+        self._subscriptions[conn_id].add(stream)
+        self._stream_to_connection[stream] = conn_id
+        
+        # Send subscription message (Backpack format)
         message = {
-            "method": "subscribe",
-            "params": {
-                "stream": stream,
-                **params,
-            },
+            "method": "SUBSCRIBE",
+            "params": [stream],
         }
         
-        await self._send_message(message)
+        # Add signature for private streams
+        if stream.startswith("account."):
+            if self._api_key and self._api_secret:
+                timestamp = int(asyncio.get_event_loop().time() * 1000)
+                window = 5000
+                signature_str = f"instruction=subscribe&timestamp={timestamp}&window={window}"
+                signature = sign_request(
+                    api_secret=self._api_secret,
+                    signature_str=signature_str,
+                )
+                message["signature"] = [self._api_key, signature, str(timestamp), str(window)]
+        
+        await self._send_message_on_connection(conn_id, message)
 
     async def unsubscribe(self, stream: str) -> None:
         """
@@ -379,33 +446,59 @@ class BackpackWebSocketClient:
             The stream name.
             
         """
-        self._subscriptions.discard(stream)
+        # Find the connection for this stream
+        conn_id = self._stream_to_connection.get(stream)
+        if conn_id is None:
+            self._log.warning(f"Stream {stream} not found in subscriptions")
+            return
+            
+        # Remove from tracking
+        if conn_id in self._subscriptions:
+            self._subscriptions[conn_id].discard(stream)
+        del self._stream_to_connection[stream]
         
+        # Send unsubscribe message
         message = {
-            "method": "unsubscribe",
-            "params": {
-                "stream": stream,
-            },
+            "method": "UNSUBSCRIBE",
+            "params": [stream],
         }
         
-        await self._send_message(message)
+        await self._send_message_on_connection(conn_id, message)
 
     async def subscribe_ticker(self, symbol: str) -> None:
         """Subscribe to ticker updates for a symbol."""
-        await self.subscribe(f"{symbol.lower()}@ticker")
+        await self.subscribe(f"ticker.{symbol}")
 
     async def subscribe_trades(self, symbol: str) -> None:
         """Subscribe to trade updates for a symbol."""
-        await self.subscribe(f"{symbol.lower()}@trades")
+        await self.subscribe(f"trade.{symbol}")
 
-    async def subscribe_depth(self, symbol: str, depth: int = 20) -> None:
+    async def subscribe_depth(self, symbol: str, aggregation: str = "") -> None:
         """Subscribe to order book depth updates for a symbol."""
-        await self.subscribe(f"{symbol.lower()}@depth{depth}")
+        # Backpack supports depth, depth.200ms, depth.1000ms
+        if aggregation:
+            await self.subscribe(f"depth.{aggregation}.{symbol}")
+        else:
+            await self.subscribe(f"depth.{symbol}")
 
-    async def subscribe_account(self) -> None:
-        """Subscribe to account updates (requires authentication)."""
-        if not self._authenticated:
-            self._log.warning("Cannot subscribe to account updates without authentication")
-            return
-            
-        await self.subscribe("account")
+    async def subscribe_kline(self, symbol: str, interval: str) -> None:
+        """Subscribe to kline/candlestick updates for a symbol."""
+        await self.subscribe(f"kline.{interval}.{symbol}")
+
+    async def subscribe_book_ticker(self, symbol: str) -> None:
+        """Subscribe to best bid/ask updates for a symbol."""
+        await self.subscribe(f"bookTicker.{symbol}")
+
+    async def subscribe_order_update(self, symbol: str | None = None) -> None:
+        """Subscribe to order updates (requires authentication)."""
+        if symbol:
+            await self.subscribe(f"account.orderUpdate.{symbol}")
+        else:
+            await self.subscribe("account.orderUpdate")
+
+    async def subscribe_position_update(self, symbol: str | None = None) -> None:
+        """Subscribe to position updates (requires authentication)."""
+        if symbol:
+            await self.subscribe(f"account.positionUpdate.{symbol}")
+        else:
+            await self.subscribe("account.positionUpdate")

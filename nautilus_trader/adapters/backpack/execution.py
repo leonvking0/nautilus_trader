@@ -30,6 +30,7 @@ from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.parsing import parse_balance
 from nautilus_trader.adapters.backpack.parsing import parse_order
+from nautilus_trader.adapters.backpack.websocket.client import BackpackWebSocketClient
 from nautilus_trader.accounting.accounts.cash import CashAccount
 from nautilus_trader.cache.cache import Cache
 from nautilus_trader.common.component import LiveClock
@@ -113,6 +114,7 @@ class BackpackExecutionClient(LiveExecutionClient):
 
         self._http_client = client
         self._log = Logger(name=name or BACKPACK_VENUE.value)
+        self._ws_client: BackpackWebSocketClient | None = None
         
         # Order tracking
         self._pending_orders: dict[ClientOrderId, Order] = {}
@@ -129,17 +131,30 @@ class BackpackExecutionClient(LiveExecutionClient):
         # Initialize account
         await self._update_account_state()
         
-        # Connect WebSocket if needed for order updates
-        # Will be implemented in Phase 2
+        # Connect WebSocket for order updates
+        self._ws_client = BackpackWebSocketClient(
+            api_key=self._http_client._api_key,
+            api_secret=self._http_client._api_secret,
+            testnet=self._http_client._testnet,
+            handler=self._handle_ws_message,
+            logger=self._log,
+        )
         
-        self._log.info("Connected to Backpack execution")
+        await self._ws_client.connect()
+        
+        # Subscribe to order updates
+        await self._ws_client.subscribe_order_update()
+        
+        self._log.info("Connected to Backpack execution with WebSocket")
 
     async def _disconnect(self) -> None:
         """Disconnect the execution client."""
         self._log.info("Disconnecting from Backpack execution...")
         
         # Close WebSocket connections
-        # Will be implemented in Phase 2
+        if self._ws_client:
+            await self._ws_client.disconnect()
+            self._ws_client = None
         
         self._log.info("Disconnected from Backpack execution")
 
@@ -367,3 +382,113 @@ class BackpackExecutionClient(LiveExecutionClient):
             )
             
         self._pending_orders.pop(order.client_order_id, None)
+    
+    def _handle_ws_message(self, data: dict) -> None:
+        """Handle WebSocket message for order updates."""
+        stream = data.get("stream", "")
+        
+        if "orderUpdate" in stream:
+            self._handle_order_update(data)
+        elif "positionUpdate" in stream:
+            self._handle_position_update(data)
+        else:
+            self._log.debug(f"Unhandled execution stream: {stream}")
+    
+    def _handle_order_update(self, data: dict) -> None:
+        """Handle order update from WebSocket."""
+        try:
+            # Parse order update based on event type
+            event_type = data.get("data", {}).get("e", "")
+            
+            if event_type == "orderAccepted":
+                self._handle_order_accepted(data)
+            elif event_type == "orderFill":
+                self._handle_order_fill(data)
+            elif event_type == "orderCancelled":
+                self._handle_order_cancelled(data)
+            elif event_type == "orderExpired":
+                self._handle_order_expired(data)
+            else:
+                self._log.debug(f"Unhandled order event type: {event_type}")
+                
+        except Exception as e:
+            self._log.error(f"Error handling order update: {e}")
+    
+    def _handle_order_accepted(self, data: dict) -> None:
+        """Handle order accepted event."""
+        # Extract order details from WebSocket message
+        order_data = data.get("data", {})
+        client_order_id_str = order_data.get("c")
+        venue_order_id_str = order_data.get("i")
+        
+        if not venue_order_id_str:
+            return
+            
+        # Find the corresponding pending order
+        for client_order_id, order in self._pending_orders.items():
+            if client_order_id_str and str(client_order_id) == client_order_id_str:
+                # Generate accepted event
+                venue_order_id = VenueOrderId(venue_order_id_str)
+                self._venue_order_ids[client_order_id] = venue_order_id
+                
+                self.generate_order_accepted(
+                    strategy_id=order.strategy_id,
+                    instrument_id=order.instrument_id,
+                    client_order_id=client_order_id,
+                    venue_order_id=venue_order_id,
+                    ts_event=order_data.get("T", self._clock.timestamp_ns()),
+                )
+                break
+    
+    def _handle_order_fill(self, data: dict) -> None:
+        """Handle order fill event."""
+        # Extract fill details from WebSocket message
+        order_data = data.get("data", {})
+        venue_order_id_str = order_data.get("i")
+        
+        if not venue_order_id_str:
+            return
+            
+        # Find the corresponding order
+        venue_order_id = VenueOrderId(venue_order_id_str)
+        
+        # Generate fill event
+        # Implementation details would parse the fill data
+        # and generate appropriate fill events
+        
+    def _handle_order_cancelled(self, data: dict) -> None:
+        """Handle order cancelled event."""
+        # Extract cancellation details from WebSocket message
+        order_data = data.get("data", {})
+        venue_order_id_str = order_data.get("i")
+        
+        if not venue_order_id_str:
+            return
+            
+        # Generate cancelled event
+        venue_order_id = VenueOrderId(venue_order_id_str)
+        
+        # Find client order ID
+        for client_order_id, v_order_id in self._venue_order_ids.items():
+            if v_order_id == venue_order_id:
+                order = self._cache.order(client_order_id)
+                if order:
+                    self.generate_order_canceled(
+                        strategy_id=order.strategy_id,
+                        instrument_id=order.instrument_id,
+                        client_order_id=client_order_id,
+                        venue_order_id=venue_order_id,
+                        ts_event=order_data.get("T", self._clock.timestamp_ns()),
+                    )
+                break
+    
+    def _handle_order_expired(self, data: dict) -> None:
+        """Handle order expired event."""
+        # Similar to cancelled but with expired status
+        self._handle_order_cancelled(data)
+    
+    def _handle_position_update(self, data: dict) -> None:
+        """Handle position update from WebSocket."""
+        # Position updates for futures trading
+        # Will be implemented when futures support is added
+        pass
