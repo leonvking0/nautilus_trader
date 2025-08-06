@@ -31,6 +31,7 @@ from nautilus_trader.core.datetime import millis_to_nanos
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.identifiers import Symbol
 from nautilus_trader.model.identifiers import Venue
+from nautilus_trader.model.currencies import Currency
 from nautilus_trader.model.instruments.currency_pair import CurrencyPair
 from nautilus_trader.model.objects import PRICE_MAX
 from nautilus_trader.model.objects import PRICE_MIN
@@ -77,7 +78,7 @@ class BackpackInstrumentProvider(InstrumentProvider):
 
         self._log_warnings = config.log_warnings if config else True
 
-        self._decoder = msgspec.json.Decoder()
+        self._decoder = msgspec.json.Decoder(list[BackpackMarket])
         self._encoder = msgspec.json.Encoder()
 
     async def load_all_async(self, filters: dict | None = None) -> None:
@@ -99,8 +100,7 @@ class BackpackInstrumentProvider(InstrumentProvider):
         # Get all markets
         markets_data = await self._client.get("/api/markets")
         markets = self._decoder.decode(
-            self._encoder.encode(markets_data),
-            type=list[BackpackMarket],
+            self._encoder.encode(markets_data)
         )
 
         for market in markets:
@@ -141,8 +141,7 @@ class BackpackInstrumentProvider(InstrumentProvider):
         # Get all markets (Backpack doesn't have a single market endpoint)
         markets_data = await self._client.get("/api/markets")
         markets = self._decoder.decode(
-            self._encoder.encode(markets_data),
-            type=list[BackpackMarket],
+            self._encoder.encode(markets_data)
         )
 
         # Create lookup dict
@@ -178,8 +177,7 @@ class BackpackInstrumentProvider(InstrumentProvider):
         # Get all markets (Backpack doesn't have a single market endpoint)
         markets_data = await self._client.get("/api/markets")
         markets = self._decoder.decode(
-            self._encoder.encode(markets_data),
-            type=list[BackpackMarket],
+            self._encoder.encode(markets_data)
         )
 
         symbol = instrument_id.symbol.value
@@ -223,8 +221,8 @@ class BackpackInstrumentProvider(InstrumentProvider):
             instrument = CurrencyPair(
                 instrument_id=instrument_id,
                 raw_symbol=Symbol(market.symbol),
-                base_currency=market.base_currency,
-                quote_currency=market.quote_currency,
+                base_currency=Currency.from_str(market.base_currency),
+                quote_currency=Currency.from_str(market.quote_currency),
                 price_precision=market.price_decimals,
                 size_precision=market.quantity_decimals,
                 price_increment=price_increment,

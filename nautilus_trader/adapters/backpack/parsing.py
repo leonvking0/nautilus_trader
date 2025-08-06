@@ -368,6 +368,78 @@ def parse_order_book(data: dict[str, Any], symbol: str, ts_init: int) -> OrderBo
     )
 
 
+def parse_order(data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse a Backpack order response.
+    
+    Parameters
+    ----------
+    data : dict[str, Any]
+        The order data from Backpack API.
+    
+    Returns
+    -------
+    dict[str, Any]
+        The parsed order data.
+    """
+    return {
+        "id": data.get("id"),
+        "client_id": data.get("client_id"),
+        "symbol": data.get("symbol"),
+        "side": backpack_order_side_to_nautilus(data.get("side", "")),
+        "order_type": backpack_order_type_to_nautilus(data.get("order_type", "")),
+        "time_in_force": backpack_time_in_force_to_nautilus(data.get("time_in_force", "")),
+        "price": data.get("price"),
+        "quantity": data.get("quantity"),
+        "executed_quantity": data.get("executed_quantity", "0"),
+        "executed_quote_quantity": data.get("executed_quote_quantity", "0"),
+        "status": backpack_order_status_to_nautilus(data.get("status", "")),
+        "created_at": data.get("created_at"),
+        "post_only": data.get("post_only", False),
+        "reduce_only": data.get("reduce_only", False),
+        "trigger_price": data.get("trigger_price"),
+    }
+
+
+def parse_order_report(data: dict[str, Any], account_id: AccountId, ts_init: int) -> dict[str, Any]:
+    """
+    Parse a Backpack order report for execution updates.
+    
+    Parameters
+    ----------
+    data : dict[str, Any]
+        The order data from Backpack API.
+    account_id : AccountId
+        The account identifier.
+    ts_init : int
+        The initialization timestamp in nanoseconds.
+    
+    Returns
+    -------
+    dict[str, Any]
+        The parsed order report data.
+    """
+    return {
+        "account_id": account_id,
+        "instrument_id": parse_instrument_id(data.get("symbol", "")),
+        "venue_order_id": data.get("id"),
+        "client_order_id": data.get("client_id"),
+        "order_side": backpack_order_side_to_nautilus(data.get("side", "")),
+        "order_type": backpack_order_type_to_nautilus(data.get("order_type", "")),
+        "time_in_force": backpack_time_in_force_to_nautilus(data.get("time_in_force", "")),
+        "order_status": backpack_order_status_to_nautilus(data.get("status", "")),
+        "price": data.get("price"),
+        "quantity": data.get("quantity"),
+        "filled_qty": data.get("executed_quantity", "0"),
+        "avg_px": None,  # Calculate from executed_quote_quantity / executed_quantity if needed
+        "created_at": data.get("created_at"),
+        "updated_at": data.get("updated_at", data.get("created_at")),
+        "ts_init": ts_init,
+        "post_only": data.get("post_only", False),
+        "reduce_only": data.get("reduce_only", False),
+    }
+
+
 def parse_balance(data: dict[str, Any], account_id: AccountId) -> list[AccountBalance]:
     """
     Parse a Backpack balance response to AccountBalance list.

@@ -99,6 +99,98 @@ class BackpackMarketType(Enum):
     PERP = "Perpetual"
 
 
+# Conversion functions
+def backpack_order_side_from_nautilus(side: OrderSide) -> str:
+    """Convert Nautilus order side to Backpack format."""
+    if side == OrderSide.BUY:
+        return BackpackOrderSide.BID.value
+    elif side == OrderSide.SELL:
+        return BackpackOrderSide.ASK.value
+    else:
+        raise ValueError(f"Invalid order side: {side}")
+
+
+def backpack_order_side_to_nautilus(side: str) -> OrderSide:
+    """Convert Backpack order side to Nautilus format."""
+    if side in ("Bid", "Buy"):
+        return OrderSide.BUY
+    elif side in ("Ask", "Sell"):
+        return OrderSide.SELL
+    else:
+        raise ValueError(f"Invalid Backpack order side: {side}")
+
+
+def backpack_order_type_from_nautilus(order_type: OrderType) -> str:
+    """Convert Nautilus order type to Backpack format."""
+    if order_type == OrderType.LIMIT:
+        return BackpackOrderType.LIMIT.value
+    elif order_type == OrderType.MARKET:
+        return BackpackOrderType.MARKET.value
+    else:
+        raise ValueError(f"Unsupported order type: {order_type}")
+
+
+def backpack_order_type_to_nautilus(order_type: str) -> OrderType:
+    """Convert Backpack order type to Nautilus format."""
+    if order_type == "Limit":
+        return OrderType.LIMIT
+    elif order_type == "Market":
+        return OrderType.MARKET
+    elif order_type in ("Stop", "Stop_Limit", "StopLimit"):
+        return OrderType.STOP_LIMIT
+    else:
+        raise ValueError(f"Invalid Backpack order type: {order_type}")
+
+
+def backpack_time_in_force_from_nautilus(tif: TimeInForce) -> str:
+    """Convert Nautilus time-in-force to Backpack format."""
+    if tif == TimeInForce.GTC:
+        return BackpackTimeInForce.GTC.value
+    elif tif == TimeInForce.IOC:
+        return BackpackTimeInForce.IOC.value
+    elif tif == TimeInForce.FOK:
+        return BackpackTimeInForce.FOK.value
+    elif tif == TimeInForce.GTD:
+        # Backpack doesn't support GTD, use GTC as fallback
+        return BackpackTimeInForce.GTC.value
+    else:
+        raise ValueError(f"Unsupported time-in-force: {tif}")
+
+
+def backpack_time_in_force_to_nautilus(tif: str) -> TimeInForce:
+    """Convert Backpack time-in-force to Nautilus format."""
+    if tif == "GTC":
+        return TimeInForce.GTC
+    elif tif == "IOC":
+        return TimeInForce.IOC
+    elif tif == "FOK":
+        return TimeInForce.FOK
+    elif tif == "PostOnly":
+        # PostOnly is handled separately via post_only flag
+        return TimeInForce.GTC
+    else:
+        raise ValueError(f"Invalid Backpack time-in-force: {tif}")
+
+
+def backpack_order_status_to_nautilus(status: str) -> OrderStatus:
+    """Convert Backpack order status to Nautilus format."""
+    status_lower = status.lower()
+    if status_lower in ("new", "open"):
+        return OrderStatus.ACCEPTED
+    elif status_lower == "partiallyfilled":
+        return OrderStatus.PARTIALLY_FILLED
+    elif status_lower == "filled":
+        return OrderStatus.FILLED
+    elif status_lower in ("cancelled", "canceled"):
+        return OrderStatus.CANCELED
+    elif status_lower == "expired":
+        return OrderStatus.EXPIRED
+    elif status_lower == "rejected":
+        return OrderStatus.REJECTED
+    else:
+        raise ValueError(f"Invalid Backpack order status: {status}")
+
+
 @unique
 class BackpackFillType(Enum):
     """Represents a Backpack fill type."""

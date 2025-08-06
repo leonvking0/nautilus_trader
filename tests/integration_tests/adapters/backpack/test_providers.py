@@ -87,13 +87,22 @@ class TestBackpackInstrumentProvider:
             },
         ]
         
-        self.client.get = AsyncMock(return_value=mock_markets)
+        # Mock both account and markets responses
+        async def mock_get(endpoint):
+            if endpoint == "/api/account":
+                return None  # Account call can fail
+            elif endpoint == "/api/markets":
+                return mock_markets
+            
+        self.client.get = AsyncMock(side_effect=mock_get)
         
         # Load all instruments
         await self.provider.load_all_async()
         
         # Verify API was called
-        self.client.get.assert_called_once_with("/api/markets")
+        assert self.client.get.call_count == 2
+        self.client.get.assert_any_call("/api/account")
+        self.client.get.assert_any_call("/api/markets")
         
         # Check instruments were parsed and added
         instruments = self.provider.list_all()
@@ -105,8 +114,8 @@ class TestBackpackInstrumentProvider:
         )
         assert sol_usdc is not None
         assert isinstance(sol_usdc, CurrencyPair)
-        assert sol_usdc.base_currency == "SOL"
-        assert sol_usdc.quote_currency == "USDC"
+        assert str(sol_usdc.base_currency) == "SOL"
+        assert str(sol_usdc.quote_currency) == "USDC"
         assert sol_usdc.price_precision == 4
         assert sol_usdc.size_precision == 2
 
@@ -134,14 +143,21 @@ class TestBackpackInstrumentProvider:
             },
         ]
         
-        self.client.get = AsyncMock(return_value=mock_markets)
+        # Mock both account and markets responses
+        async def mock_get(endpoint):
+            if endpoint == "/api/account":
+                return None  # Account call can fail
+            elif endpoint == "/api/markets":
+                return mock_markets
+            
+        self.client.get = AsyncMock(side_effect=mock_get)
         
         # Load specific instrument
         instrument_id = InstrumentId(Symbol("SOL_USDC"), BACKPACK_VENUE)
         await self.provider.load_ids_async([instrument_id])
         
         # Verify API was called
-        self.client.get.assert_called_once_with("/api/markets")
+        self.client.get.assert_any_call("/api/markets")
         
         # Check instrument was loaded
         instrument = self.provider.find(instrument_id)
@@ -172,14 +188,21 @@ class TestBackpackInstrumentProvider:
             },
         ]
         
-        self.client.get = AsyncMock(return_value=mock_markets)
+        # Mock both account and markets responses
+        async def mock_get(endpoint):
+            if endpoint == "/api/account":
+                return None  # Account call can fail
+            elif endpoint == "/api/markets":
+                return mock_markets
+            
+        self.client.get = AsyncMock(side_effect=mock_get)
         
         # Load single instrument
         instrument_id = InstrumentId(Symbol("SOL_USDC"), BACKPACK_VENUE)
         await self.provider.load_async(instrument_id)
         
         # Verify API was called
-        self.client.get.assert_called_once_with("/api/markets")
+        self.client.get.assert_any_call("/api/markets")
         
         # Check instrument was loaded
         instrument = self.provider.find(instrument_id)
@@ -242,13 +265,20 @@ class TestBackpackSpotInstrumentProvider:
             },
         ]
         
-        self.client.get = AsyncMock(return_value=mock_markets)
+        # Mock both account and markets responses
+        async def mock_get(endpoint):
+            if endpoint == "/api/account":
+                return None  # Account call can fail
+            elif endpoint == "/api/markets":
+                return mock_markets
+            
+        self.client.get = AsyncMock(side_effect=mock_get)
         
         # Load all instruments (should filter to spot only)
         await self.provider.load_all_async()
         
         # Verify API was called
-        self.client.get.assert_called_once_with("/api/markets")
+        self.client.get.assert_any_call("/api/markets")
         
         # Check only spot instrument was loaded
         instruments = self.provider.list_all()
