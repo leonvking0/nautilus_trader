@@ -349,15 +349,17 @@ class BackpackHttpClient:
         client_id: str | None = None,
     ) -> dict[str, Any]:
         """Cancel an order."""
-        params = {"symbol": symbol}
+        data = {"symbol": symbol}
         if order_id:
-            params["orderId"] = order_id
+            data["orderId"] = order_id
         if client_id:
-            params["clientId"] = client_id
+            data["clientId"] = client_id
         
-        return await self._delete(
-            BACKPACK_API_PATHS["order"],
-            params=params,
+        # Cancel endpoint expects data in body for DELETE request
+        return await self._request(
+            method=HttpMethod.DELETE,
+            path=BACKPACK_API_PATHS["order"],
+            data=data,  # Pass as data, not params
             auth=True,
             instruction=BACKPACK_INSTRUCTIONS["order_cancel"],
         )

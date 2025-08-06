@@ -180,11 +180,10 @@ def sign_request(
     # Build the payload
     payload = build_signature_payload(instruction, params, timestamp, window)
     
-    # Sign the payload
-    signature_bytes = ed25519_signature(private_key, payload)
+    # Sign the payload - ed25519_signature already returns base64-encoded string
+    signature = ed25519_signature(private_key, payload)
     
-    # Base64 encode the signature
-    signature = base64.b64encode(signature_bytes).decode()
+    # No need to encode again - signature is already base64-encoded
     
     return signature, timestamp, window
 
@@ -221,10 +220,9 @@ def sign_batch_order_request(
     # Build the payload for batch orders
     payload = build_batch_order_payload(orders, timestamp, window)
     
-    # Sign the payload
-    signature_bytes = ed25519_signature(private_key, payload)
+    # Sign the payload - ed25519_signature already returns base64-encoded string
+    signature = ed25519_signature(private_key, payload)
     
-    # Base64 encode the signature
-    signature = base64.b64encode(signature_bytes).decode()
+    # No need to encode again - signature is already base64-encoded
     
     return signature, timestamp, window
