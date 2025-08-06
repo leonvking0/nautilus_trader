@@ -1,0 +1,18 @@
+{
+  "orderId": "1111343026172067",
+  "clientOrderId": "123",
+  "symbol": "BTC_USDC",
+  "side": "Buy",
+  "orderType": "Limit",
+  "timeInForce": "GTC",
+  "price": "30000.00",
+  "quantity": "0.1000",
+  "quoteQuantity": null,
+  "executedQuantity": "0.0000",
+  "executedQuoteQuantity": "0.00",
+  "status": "New",
+  "createdAt": 1694687692980,
+  "updatedAt": 1694687692980,
+  "selfTradePrevention": "RejectTaker",
+  "postOnly": false
+}

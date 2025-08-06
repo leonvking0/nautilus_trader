@@ -1,0 +1,42 @@
+[
+  {
+    "id": 987654321,
+    "price": "30123.45",
+    "quantity": "0.1234",
+    "side": "Buy",
+    "timestamp": 1694687692980,
+    "isBuyerMaker": false
+  },
+  {
+    "id": 987654322,
+    "price": "30123.00",
+    "quantity": "0.5678",
+    "side": "Sell",
+    "timestamp": 1694687693100,
+    "isBuyerMaker": true
+  },
+  {
+    "id": 987654323,
+    "price": "30124.00",
+    "quantity": "1.0000",
+    "side": "Buy",
+    "timestamp": 1694687693200,
+    "isBuyerMaker": false
+  },
+  {
+    "id": 987654324,
+    "price": "30123.50",
+    "quantity": "0.2500",
+    "side": "Sell",
+    "timestamp": 1694687693300,
+    "isBuyerMaker": true
+  },
+  {
+    "id": 987654325,
+    "price": "30124.50",
+    "quantity": "0.7500",
+    "side": "Buy",
+    "timestamp": 1694687693400,
+    "isBuyerMaker": false
+  }
+]

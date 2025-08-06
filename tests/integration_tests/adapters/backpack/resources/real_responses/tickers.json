@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "captured_at": "2025-08-06T20:16:13.597184+00:00",
+    "endpoint": "/api/v1/tickers",
+    "api_version": "v1",
+    "exchange": "backpack",
+    "testnet": false
+  },
+  "data": [
+    {
+      "firstPrice": "253.76",
+      "high": "325.64",
+      "lastPrice": "262.98",
+      "low": "251.51",
+      "priceChange": "9.22",
+      "priceChangePercent": "0.036334",
+      "quoteVolume": "2146.62478",
+      "symbol": "AAVE_USDC",
+      "trades": "226",
+      "volume": "8.361"
+    },
+    {
+      "firstPrice": "253.88",
+      "high": "264.64",
+      "lastPrice": "263.18",
+      "low": "250.74",
+      "priceChange": "9.3",
+      "priceChangePercent": "0.036631",
+      "quoteVolume": "1664455.895",
+      "symbol": "AAVE_USDC_PERP",
+      "trades": "3264",
+      "volume": "6481.61"
+    },
+    {
+      "firstPrice": "0.724",
+      "high": "0.7474",
+      "lastPrice": "0.743",
+      "low": "0.7111",
+      "priceChange": "0.019",
+      "priceChangePercent": "0.026243",
+      "quoteVolume": "235926.2284",
+      "symbol": "ADA_USDC_PERP",
+      "trades": "1537",
+      "volume": "325069"
+    },
+    {
+      "firstPrice": "0.5554",
+      "high": "0.5701",
+      "lastPrice": "0.5652",
+      "low": "0.542",
+      "priceChange": "0.0098",
+      "priceChangePercent": "0.017645",
+      "quoteVolume": "253.40652",
+      "symbol": "APE_USDC",
+      "trades": "36",
+      "volume": "460.21"
+    },
+    {
+      "firstPrice": "0.3833",
+      "high": "0.3919",
+      "lastPrice": "0.3883",
+      "low": "0.3731",
+      "priceChange": "0.005",
+      "priceChangePercent": "0.013045",
+      "quoteVolume": "327708.30911",
+      "symbol": "ARB_USDC_PERP",
+      "trades": "1621",
+      "volume": "857276.7"
+    }
+  ]
+}

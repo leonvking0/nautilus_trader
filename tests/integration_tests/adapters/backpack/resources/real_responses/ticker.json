@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "captured_at": "2025-08-06T20:16:13.597184+00:00",
+    "endpoint": "/api/v1/ticker",
+    "api_version": "v1",
+    "exchange": "backpack",
+    "testnet": false
+  },
+  "data": {
+    "firstPrice": "163.32",
+    "high": "169.94",
+    "lastPrice": "168.52",
+    "low": "161.2",
+    "priceChange": "5.2",
+    "priceChangePercent": "0.031839",
+    "quoteVolume": "27702096.3986",
+    "symbol": "SOL_USDC",
+    "trades": "83694",
+    "volume": "168140.32"
+  }
+}

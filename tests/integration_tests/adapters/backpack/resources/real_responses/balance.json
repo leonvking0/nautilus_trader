@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "captured_at": "2025-08-06T20:16:13.597184+00:00",
+    "endpoint": "/api/v1/capital",
+    "api_version": "v1",
+    "exchange": "backpack",
+    "testnet": false
+  },
+  "data": {
+    "USDC": {
+      "available": "100.00",
+      "locked": "0.00",
+      "staked": "0.00"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "capture_summary": {
+    "timestamp": "2025-08-06T20:16:13.597184+00:00",
+    "total_endpoints": 7,
+    "captured": [
+      "markets",
+      "ticker",
+      "tickers",
+      "orderbook",
+      "trades",
+      "balance",
+      "orders"
+    ],
+    "testnet": false
+  }
+}

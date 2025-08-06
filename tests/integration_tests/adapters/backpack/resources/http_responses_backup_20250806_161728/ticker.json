@@ -1,0 +1,14 @@
+{
+  "symbol": "BTC_USDC",
+  "lastPrice": "30123.45",
+  "bidPrice": "30120.00",
+  "askPrice": "30125.00",
+  "volume24h": "15234.5678",
+  "volumeQuote24h": "456789012.34",
+  "highPrice24h": "30500.00",
+  "lowPrice24h": "29800.00",
+  "priceChange24h": "323.45",
+  "priceChangePercent24h": "1.08",
+  "trades24h": 12543,
+  "timestamp": 1694687692980
+}

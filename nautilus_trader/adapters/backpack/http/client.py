@@ -138,7 +138,13 @@ class BackpackHttpClient:
             The response data.
 
         """
+        # Build URL with query parameters
         url = f"{self._base_url}{path}"
+        if params:
+            from urllib.parse import urlencode
+            query_string = urlencode(params)
+            url = f"{url}?{query_string}"
+        
         headers = self._headers.copy()
         
         # Handle authentication
@@ -179,13 +185,12 @@ class BackpackHttpClient:
             else:
                 body = data
         
-        # Send request
+        # Send request (HttpClient doesn't accept params, they're already in URL)
         response: HttpResponse = await self._client.request(
             method=method,
             url=url,
             headers=headers,
             body=body,
-            params=params,
         )
         
         # Handle response

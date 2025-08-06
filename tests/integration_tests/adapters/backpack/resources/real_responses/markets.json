@@ -1,0 +1,3970 @@
+{
+  "metadata": {
+    "captured_at": "2025-08-06T20:16:13.597184+00:00",
+    "endpoint": "/api/v1/markets",
+    "api_version": "v1",
+    "exchange": "backpack",
+    "testnet": false
+  },
+  "data": [
+    {
+      "baseSymbol": "SOL",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SOL_USDC"
+    },
+    {
+      "baseSymbol": "PYTH",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PYTH_USDC"
+    },
+    {
+      "baseSymbol": "JTO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.1",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "JTO_USDC"
+    },
+    {
+      "baseSymbol": "HNT",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.1",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "HNT_USDC"
+    },
+    {
+      "baseSymbol": "MOBILE",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0000001",
+          "tickSize": "0.0000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "MOBILE_USDC"
+    },
+    {
+      "baseSymbol": "BONK",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000000001",
+          "tickSize": "0.000000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BONK_USDC"
+    },
+    {
+      "baseSymbol": "WIF",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WIF_USDC"
+    },
+    {
+      "baseSymbol": "USDT",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.005",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.01",
+            "minMultiplier": "0.99"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.995",
+          "minMultiplier": "0.75",
+          "minPrice": "0.1",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "USDT_USDC"
+    },
+    {
+      "baseSymbol": "JUP",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.24",
+            "minMultiplier": "0.88"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "JUP_USDC"
+    },
+    {
+      "baseSymbol": "RENDER",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "RENDER_USDC"
+    },
+    {
+      "baseSymbol": "WEN",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WEN_USDC"
+    },
+    {
+      "baseSymbol": "BTC",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.02",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.06",
+            "minMultiplier": "0.94"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.98",
+          "minMultiplier": "0.75",
+          "minPrice": "0.1",
+          "tickSize": "0.1"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.00001",
+          "stepSize": "0.00001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BTC_USDC"
+    },
+    {
+      "baseSymbol": "W",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "W_USDC"
+    },
+    {
+      "baseSymbol": "TNSR",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "TNSR_USDC"
+    },
+    {
+      "baseSymbol": "PRCL",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PRCL_USDC"
+    },
+    {
+      "baseSymbol": "MEW",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "MEW_USDC"
+    },
+    {
+      "baseSymbol": "BOME",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BOME_USDC"
+    },
+    {
+      "baseSymbol": "RAY",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "RAY_USDC"
+    },
+    {
+      "baseSymbol": "HONEY",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "HONEY_USDC"
+    },
+    {
+      "baseSymbol": "KMNO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "KMNO_USDC"
+    },
+    {
+      "baseSymbol": "ETH",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.02",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.07",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.98",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.0001",
+          "stepSize": "0.0001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ETH_USDC"
+    },
+    {
+      "baseSymbol": "DRIFT",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "DRIFT_USDC"
+    },
+    {
+      "baseSymbol": "PEPE",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000000001",
+          "tickSize": "0.000000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PEPE_USDC"
+    },
+    {
+      "baseSymbol": "SHIB",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000000001",
+          "tickSize": "0.000000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SHIB_USDC"
+    },
+    {
+      "baseSymbol": "LINK",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "LINK_USDC"
+    },
+    {
+      "baseSymbol": "UNI",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "UNI_USDC"
+    },
+    {
+      "baseSymbol": "ONDO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ONDO_USDC"
+    },
+    {
+      "baseSymbol": "STRK",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "STRK_USDC"
+    },
+    {
+      "baseSymbol": "WLD",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WLD_USDC"
+    },
+    {
+      "baseSymbol": "IO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "IO_USDC"
+    },
+    {
+      "baseSymbol": "ZRO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ZRO_USDC"
+    },
+    {
+      "baseSymbol": "LDO",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "LDO_USDC"
+    },
+    {
+      "baseSymbol": "AAVE",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": "0",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "AAVE_USDC"
+    },
+    {
+      "baseSymbol": "CLOUD",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "CLOUD_USDC"
+    },
+    {
+      "baseSymbol": "POL",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "POL_USDC"
+    },
+    {
+      "baseSymbol": "MOODENG",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "MOODENG_USDC"
+    },
+    {
+      "baseSymbol": "DBR",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.5",
+            "minMultiplier": "0.5"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "DBR_USDC"
+    },
+    {
+      "baseSymbol": "ACT",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "ACT_USDC"
+    },
+    {
+      "baseSymbol": "GOAT",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "GOAT_USDC"
+    },
+    {
+      "baseSymbol": "APE",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "APE_USDC"
+    },
+    {
+      "baseSymbol": "ENA",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ENA_USDC"
+    },
+    {
+      "baseSymbol": "ME",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ME_USDC"
+    },
+    {
+      "baseSymbol": "PENGU",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PENGU_USDC"
+    },
+    {
+      "baseSymbol": "SOL",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.02",
+        "factor": "0.0001275",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.0125",
+        "factor": "0.0000765",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "4000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SOL_USDC_PERP"
+    },
+    {
+      "baseSymbol": "BTC",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.02",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.06",
+            "minMultiplier": "0.94"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.98",
+          "minMultiplier": "0.75",
+          "minPrice": "0.1",
+          "tickSize": "0.1"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.00001",
+          "stepSize": "0.00001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.02",
+        "factor": "0.000085",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.0125",
+        "factor": "0.000051",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "3200",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BTC_USDC_PERP"
+    },
+    {
+      "baseSymbol": "ETH",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.02",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.09",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.98",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.0001",
+          "stepSize": "0.0001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.02",
+        "factor": "0.0000935",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.0125",
+        "factor": "0.0000561",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "64000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ETH_USDC_PERP"
+    },
+    {
+      "baseSymbol": "SONIC",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SONIC_USDC"
+    },
+    {
+      "baseSymbol": "TRUMP",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "TRUMP_USDC"
+    },
+    {
+      "baseSymbol": "MELANIA",
+      "createdAt": "2025-01-21T06:34:54.691858",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "MELANIA_USDC"
+    },
+    {
+      "baseSymbol": "J",
+      "createdAt": "2025-01-22T05:29:05.254170",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "J_USDC"
+    },
+    {
+      "baseSymbol": "XRP",
+      "createdAt": "2025-01-28T07:19:32.810746",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.88"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.0001",
+          "stepSize": "0.0001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0002",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00012",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "10000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "XRP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "SUI",
+      "createdAt": "2025-01-28T20:14:20.882303",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.12",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00022",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.000132",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "8000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SUI_USDC_PERP"
+    },
+    {
+      "baseSymbol": "DOGE",
+      "createdAt": "2025-01-28T20:14:31.586836",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.12",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00019",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.000114",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "80000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "DOGE_USDC_PERP"
+    },
+    {
+      "baseSymbol": "JUP",
+      "createdAt": "2025-01-31T21:22:53.801156",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.13",
+            "minMultiplier": "0.89"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.000362",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.000217",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "16000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "JUP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "TRUMP",
+      "createdAt": "2025-01-31T21:23:03.217894",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.04",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.35",
+            "minMultiplier": "0.8"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.96",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.000546",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.000328",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "800000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "TRUMP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "WIF",
+      "createdAt": "2025-02-04T02:00:18.814963",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.87"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.96",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.0002",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "4000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WIF_USDC_PERP"
+    },
+    {
+      "baseSymbol": "BERA",
+      "createdAt": "2025-02-06T13:01:14.887275",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.35",
+            "minMultiplier": "0.8"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "1600000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BERA_USDC_PERP"
+    },
+    {
+      "baseSymbol": "LTC",
+      "createdAt": "2025-02-11T05:02:11.864262",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.13",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00045",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00027",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "LTC_USDC_PERP"
+    },
+    {
+      "baseSymbol": "ADA",
+      "createdAt": "2025-02-12T03:49:50.513163",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.12",
+            "minMultiplier": "0.09"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00044",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00026",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "32000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ADA_USDC_PERP"
+    },
+    {
+      "baseSymbol": "LINK",
+      "createdAt": "2025-02-12T20:12:01.554671",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0003",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00018",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "400000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "LINK_USDC_PERP"
+    },
+    {
+      "baseSymbol": "IP",
+      "createdAt": "2025-02-13T08:42:10.924247",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.04",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.25",
+            "minMultiplier": "0.87"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.96",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 14400000,
+      "fundingRateLowerBound": "-75",
+      "fundingRateUpperBound": "75",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0005",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.0003",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "2000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "IP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "HYPE",
+      "createdAt": "2025-02-14T02:24:32.511622",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.12",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.96",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00042",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00025",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "2000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "HYPE_USDC_PERP"
+    },
+    {
+      "baseSymbol": "BNB",
+      "createdAt": "2025-02-14T02:24:33.162025",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.13",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00041",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00024",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BNB_USDC_PERP"
+    },
+    {
+      "baseSymbol": "AVAX",
+      "createdAt": "2025-03-02T00:11:25.171089",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.12",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-100",
+      "fundingRateUpperBound": "100",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0004",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00024",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "AVAX_USDC_PERP"
+    },
+    {
+      "baseSymbol": "S",
+      "createdAt": "2025-03-02T00:11:34.058016",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.04",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.35",
+            "minMultiplier": "0.8"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.96",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0004",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00024",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "20000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "S_USDC_PERP"
+    },
+    {
+      "baseSymbol": "ONDO",
+      "createdAt": "2025-03-29T02:25:37.146340",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.13",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00041",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00025",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "4000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ONDO_USDC_PERP"
+    },
+    {
+      "baseSymbol": "KAITO",
+      "createdAt": "2025-03-29T02:25:47.225050",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.25",
+            "minMultiplier": "0.84"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-200",
+      "fundingRateUpperBound": "200",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "4000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "KAITO_USDC_PERP"
+    },
+    {
+      "baseSymbol": "ARB",
+      "createdAt": "2025-03-29T02:28:57.430962",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.89"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0004",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00024",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "8000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ARB_USDC_PERP"
+    },
+    {
+      "baseSymbol": "ENA",
+      "createdAt": "2025-03-29T02:28:58.445775",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00043",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00026",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "16000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ENA_USDC_PERP"
+    },
+    {
+      "baseSymbol": "AAVE",
+      "createdAt": "2025-03-29T02:28:59.983778",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.11",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.01",
+          "stepSize": "0.01"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00042",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00025",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "AAVE_USDC_PERP"
+    },
+    {
+      "baseSymbol": "DOT",
+      "createdAt": "2025-03-29T02:30:53.342134",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.11",
+            "minMultiplier": "0.92"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.0004",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00024",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "400000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "DOT_USDC_PERP"
+    },
+    {
+      "baseSymbol": "FARTCOIN",
+      "createdAt": "2025-03-29T02:30:53.828730",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.89"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-200",
+      "fundingRateUpperBound": "200",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "8000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "FARTCOIN_USDC_PERP"
+    },
+    {
+      "baseSymbol": "SUI",
+      "createdAt": "2025-04-28T06:55:39.539393",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SUI_USDC"
+    },
+    {
+      "baseSymbol": "WAL",
+      "createdAt": "2025-05-28T23:08:15.777523",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WAL_USDC"
+    },
+    {
+      "baseSymbol": "DEEP",
+      "createdAt": "2025-05-28T23:08:25.156860",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "DEEP_USDC"
+    },
+    {
+      "baseSymbol": "SEND",
+      "createdAt": "2025-05-28T23:08:34.618455",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SEND_USDC"
+    },
+    {
+      "baseSymbol": "BLUE",
+      "createdAt": "2025-05-28T23:08:44.130031",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "BLUE_USDC"
+    },
+    {
+      "baseSymbol": "HAEDAL",
+      "createdAt": "2025-05-28T23:08:53.459663",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "HAEDAL_USDC"
+    },
+    {
+      "baseSymbol": "NS",
+      "createdAt": "2025-05-28T23:09:03.002893",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": null,
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "NS_USDC"
+    },
+    {
+      "baseSymbol": "NEAR",
+      "createdAt": "2025-06-13T01:45:46.672528",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "10000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "NEAR_USDC_PERP"
+    },
+    {
+      "baseSymbol": "OP",
+      "createdAt": "2025-06-13T01:46:59.550023",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "16000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "OP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "PENGU",
+      "createdAt": "2025-06-13T01:48:38.994688",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "100",
+          "stepSize": "100"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PENGU_USDC_PERP"
+    },
+    {
+      "baseSymbol": "kPEPE",
+      "createdAt": "2025-06-13T01:48:55.027195",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "100",
+          "stepSize": "100"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "400000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "kPEPE_USDC_PERP"
+    },
+    {
+      "baseSymbol": "TAO",
+      "createdAt": "2025-06-13T01:49:10.687236",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "50000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.01",
+          "tickSize": "0.01"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.001",
+          "stepSize": "0.001"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "400000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "TAO_USDC_PERP"
+    },
+    {
+      "baseSymbol": "VIRTUAL",
+      "createdAt": "2025-06-13T01:49:27.201110",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "1600000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "VIRTUAL_USDC_PERP"
+    },
+    {
+      "baseSymbol": "TIA",
+      "createdAt": "2025-06-13T01:49:43.672139",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.0001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "1600000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "TIA_USDC_PERP"
+    },
+    {
+      "baseSymbol": "kBONK",
+      "createdAt": "2025-06-13T01:50:00.013812",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "100",
+          "stepSize": "100"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "200000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "kBONK_USDC_PERP"
+    },
+    {
+      "baseSymbol": "FRAG",
+      "createdAt": "2025-06-30T11:44:54.694081",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "FRAG_USDC"
+    },
+    {
+      "baseSymbol": "FRAG",
+      "createdAt": "2025-07-01T08:26:19.882225",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "16000000",
+      "orderBookState": "Closed",
+      "quoteSymbol": "USDC",
+      "symbol": "FRAG_USDC_PERP"
+    },
+    {
+      "baseSymbol": "PUMP",
+      "createdAt": "2025-07-13T22:34:21.979527",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "100",
+          "stepSize": "100"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PUMP_USDC"
+    },
+    {
+      "baseSymbol": "PUMP",
+      "createdAt": "2025-07-13T22:37:30.278772",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.000001",
+          "tickSize": "0.000001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "100",
+          "stepSize": "100"
+        }
+      },
+      "fundingInterval": 14400000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "10000000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "PUMP_USDC_PERP"
+    },
+    {
+      "baseSymbol": "WCT",
+      "createdAt": "2025-07-13T22:38:50.454611",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "WCT_USDC"
+    },
+    {
+      "baseSymbol": "ES",
+      "createdAt": "2025-07-15T21:51:55.584156",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.05",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.15",
+            "minMultiplier": "0.85"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.95",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "ES_USDC"
+    },
+    {
+      "baseSymbol": "SEI",
+      "createdAt": "2025-07-30T00:36:02.380176",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SEI_USDC"
+    },
+    {
+      "baseSymbol": "SEI",
+      "createdAt": "2025-07-30T00:37:11.308277",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.0001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "60000000",
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "SEI_USDC_PERP"
+    },
+    {
+      "baseSymbol": "DOGE",
+      "createdAt": "2025-08-01T05:33:03.507828",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": null,
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.00001",
+          "tickSize": "0.00001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "1",
+          "stepSize": "1"
+        }
+      },
+      "fundingInterval": null,
+      "fundingRateLowerBound": null,
+      "fundingRateUpperBound": null,
+      "imfFunction": null,
+      "marketType": "SPOT",
+      "mmfFunction": null,
+      "openInterestLimit": null,
+      "orderBookState": "Open",
+      "quoteSymbol": "USDC",
+      "symbol": "DOGE_USDC"
+    },
+    {
+      "baseSymbol": "UNI",
+      "createdAt": "2025-08-06T11:26:15.551379",
+      "filters": {
+        "price": {
+          "borrowEntryFeeMaxMultiplier": null,
+          "borrowEntryFeeMinMultiplier": null,
+          "maxImpactMultiplier": "1.03",
+          "maxMultiplier": "1.25",
+          "maxPrice": "1000",
+          "meanMarkPriceBand": {
+            "maxMultiplier": "1.1",
+            "minMultiplier": "0.9"
+          },
+          "meanPremiumBand": {
+            "tolerancePct": "0.05"
+          },
+          "minImpactMultiplier": "0.97",
+          "minMultiplier": "0.75",
+          "minPrice": "0.001",
+          "tickSize": "0.001"
+        },
+        "quantity": {
+          "maxQuantity": null,
+          "minQuantity": "0.1",
+          "stepSize": "0.1"
+        }
+      },
+      "fundingInterval": 28800000,
+      "fundingRateLowerBound": "-150",
+      "fundingRateUpperBound": "150",
+      "imfFunction": {
+        "base": "0.1",
+        "factor": "0.00055",
+        "type": "sqrt"
+      },
+      "marketType": "PERP",
+      "mmfFunction": {
+        "base": "0.05",
+        "factor": "0.00033",
+        "type": "sqrt"
+      },
+      "openInterestLimit": "6000000",
+      "orderBookState": "PostOnly",
+      "quoteSymbol": "USDC",
+      "symbol": "UNI_USDC_PERP"
+    }
+  ]
+}

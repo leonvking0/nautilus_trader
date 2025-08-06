@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "captured_at": "2025-08-06T20:16:13.597184+00:00",
+    "endpoint": "/api/v1/orders",
+    "api_version": "v1",
+    "exchange": "backpack",
+    "testnet": false
+  },
+  "data": [
+    {
+      "clientId": null,
+      "createdAt": 1754509740416,
+      "executedQuantity": "0",
+      "executedQuoteQuantity": "0",
+      "id": "TEST_ORDER_1",
+      "orderType": "Limit",
+      "postOnly": true,
+      "price": "151.4",
+      "quantity": "0.1",
+      "reduceOnly": null,
+      "relatedOrderId": null,
+      "selfTradePrevention": "RejectTaker",
+      "side": "Bid",
+      "status": "New",
+      "stopLossLimitPrice": null,
+      "stopLossTriggerBy": null,
+      "stopLossTriggerPrice": null,
+      "strategyId": null,
+      "symbol": "SOL_USDC",
+      "takeProfitLimitPrice": null,
+      "takeProfitTriggerBy": null,
+      "takeProfitTriggerPrice": null,
+      "timeInForce": "GTC",
+      "triggerBy": null,
+      "triggerPrice": null,
+      "triggerQuantity": null,
+      "triggeredAt": null,
+      "clientOrderId": "CLIENT_1"
+    }
+  ]
+}

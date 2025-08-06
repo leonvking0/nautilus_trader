@@ -1,0 +1,53 @@
+[
+  {
+    "symbol": "BTC_USDC",
+    "baseSymbol": "BTC",
+    "quoteSymbol": "USDC",
+    "volume24h": "15234.5678",
+    "volumeQuote24h": "456789012.34",
+    "highPrice24h": "30500.00",
+    "lowPrice24h": "29800.00",
+    "lastPrice": "30123.45",
+    "onOrderBook": true,
+    "priceDecimals": 2,
+    "quantityDecimals": 4,
+    "minOrderValue": "10.00",
+    "priceIncrement": "0.01",
+    "quantityIncrement": "0.0001",
+    "quoteSizeIncrement": "0.01"
+  },
+  {
+    "symbol": "SOL_USDC",
+    "baseSymbol": "SOL",
+    "quoteSymbol": "USDC",
+    "volume24h": "234567.8901",
+    "volumeQuote24h": "4567890.12",
+    "highPrice24h": "20.50",
+    "lowPrice24h": "19.00",
+    "lastPrice": "19.45",
+    "onOrderBook": true,
+    "priceDecimals": 2,
+    "quantityDecimals": 2,
+    "minOrderValue": "1.00",
+    "priceIncrement": "0.01",
+    "quantityIncrement": "0.01",
+    "quoteSizeIncrement": "0.01"
+  },
+  {
+    "symbol": "ETH_USDC",
+    "baseSymbol": "ETH",
+    "quoteSymbol": "USDC",
+    "volume24h": "45678.9012",
+    "volumeQuote24h": "78901234.56",
+    "highPrice24h": "1750.00",
+    "lowPrice24h": "1700.00",
+    "lastPrice": "1725.50",
+    "onOrderBook": true,
+    "priceDecimals": 2,
+    "quantityDecimals": 4,
+    "minOrderValue": "10.00",
+    "priceIncrement": "0.01",
+    "quantityIncrement": "0.0001",
+    "quoteSizeIncrement": "0.01"
+  }
+]
