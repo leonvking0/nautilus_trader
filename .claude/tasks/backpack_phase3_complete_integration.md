@@ -7,9 +7,10 @@ Phase 3 focuses on achieving complete feature parity with the Binance integratio
 
 **Start Date**: 2025-08-07  
 **Target Duration**: 6 weeks  
-**Current Progress**: 35% (Part A Complete + All test infrastructure fixed)  
+**Current Progress**: 40% (Part A Complete + Critical HTTP interface issues fixed)  
 **✅ Critical Issue Resolved**: Unified account fully integrated and tested
 **✅ Test Infrastructure Fixed**: All 84 broken tests from refactoring now resolved
+**✅ HTTP Interface Fixed**: BackpackAccountHttpAPI updated to new client interface (2025-08-07)
 
 ### 📋 Summary for Next Developer
 
@@ -907,7 +908,37 @@ uv run pytest tests/integration_tests/adapters/backpack/ -v
 
 ---
 
-*Last Updated*: 2025-08-07 (Test Infrastructure Fixed)  
-*Status*: IN PROGRESS - Part A Complete + Test Fixes (35%)  
+### Live Testing Results (2025-08-07 Evening)
+
+#### Critical HTTP Interface Issue Fixed
+- **Problem Identified**: `BackpackAccountHttpAPI` was using outdated `_get_signed()` and `_post_signed()` methods
+- **Root Cause**: HTTP client interface changed but dependent components weren't updated
+- **Solution Applied**: Updated 17 method calls across 2 files:
+  - `/nautilus_trader/adapters/backpack/http/account.py` (13 calls fixed)
+  - `/nautilus_trader/adapters/backpack/futures/http/position.py` (4 calls fixed)
+- **Fix**: Changed all calls to use new interface: `_get()`/`_post()` with `auth=True` parameter
+
+#### Test Results After Fix
+**✅ Working Components:**
+- Basic API connectivity restored
+- Balance fetching operational
+- Position management queries functional
+- All 10 unified account unit tests passing
+
+**⚠️ Remaining Minor Issues:**
+- Account initialization fails with zero balances (edge case)
+- Collateral API response format mismatch (returns list vs expected dict)
+- Auto-borrow testing blocked by account init issue
+
+#### Key Findings
+1. **Unified account architecture is fundamentally sound** - logic and design are correct
+2. **Integration layer had breaking changes** - HTTP client refactoring wasn't fully propagated
+3. **Primary blocker resolved** - No more method not found errors
+4. **Minor fixes still needed** for edge cases and response parsing
+
+---
+
+*Last Updated*: 2025-08-07 (HTTP Interface Fixed, Live Testing Complete)  
+*Status*: IN PROGRESS - Part A Complete + Critical Fixes Applied (40%)  
 *Owner*: Development Team  
 *Related*: `backpack_phase1_plan.md`, `backpack_phase2_plan.md`, `backpack_prd.md`

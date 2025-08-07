@@ -61,9 +61,10 @@ class BackpackAccountHttpAPI:
         BackpackAccount
             The account information.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/account",
             params={},
+            auth=True,
             instruction="accountQuery",
         )
         return self._decoder_account.decode(raw)
@@ -79,9 +80,10 @@ class BackpackAccountHttpAPI:
         BackpackCapital
             The capital information including collateral and margin rates.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/capital",
             params={},
+            auth=True,
             instruction="balanceQuery",
         )
         return self._decoder_capital.decode(raw)
@@ -97,9 +99,10 @@ class BackpackAccountHttpAPI:
         BackpackCollateral
             The collateral weights for each asset.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/collateral",
             params={},
+            auth=True,
             instruction="collateralQuery",
         )
         return self._decoder_collateral.decode(raw)
@@ -115,9 +118,10 @@ class BackpackAccountHttpAPI:
         list[BackpackCollateralDetail]
             The detailed collateral information for each asset.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/capital/collateral",
             params={},
+            auth=True,
             instruction="collateralQuery",
         )
         return self._decoder_collateral_details.decode(raw)
@@ -133,9 +137,10 @@ class BackpackAccountHttpAPI:
         list[BackpackBorrowPosition]
             The active borrow positions.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/borrowLend/positions",
             params={},
+            auth=True,
             instruction="borrowPositionHistoryQueryAll",
         )
         return self._decoder_borrow_positions.decode(raw)
@@ -151,9 +156,10 @@ class BackpackAccountHttpAPI:
         BackpackAccountLimits
             The account limits.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/account/limits/order",
             params={},
+            auth=True,
             instruction="accountQuery",
         )
         return self._decoder_account_limits.decode(raw)
@@ -169,9 +175,10 @@ class BackpackAccountHttpAPI:
         dict
             The borrow limits.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/account/limits/borrow",
             params={},
+            auth=True,
             instruction="accountQuery",
         )
         return msgspec.json.decode(raw)
@@ -187,9 +194,10 @@ class BackpackAccountHttpAPI:
         dict
             The withdrawal limits.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/account/limits/withdrawal",
             params={},
+            auth=True,
             instruction="accountQuery",
         )
         return msgspec.json.decode(raw)
@@ -217,9 +225,10 @@ class BackpackAccountHttpAPI:
             "assets": ",".join(assets),
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/account/convertDust",
             data=data,
+            auth=True,
             instruction="accountExecute",
         )
         return msgspec.json.decode(raw)
@@ -252,9 +261,10 @@ class BackpackAccountHttpAPI:
             "type": "BORROW",
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/borrowLend",
             data=data,
+            auth=True,
             instruction="borrowLendExecute",
         )
         return msgspec.json.decode(raw)
@@ -287,9 +297,10 @@ class BackpackAccountHttpAPI:
             "type": "REPAY",
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/borrowLend",
             data=data,
+            auth=True,
             instruction="borrowLendExecute",
         )
         return msgspec.json.decode(raw)
@@ -305,9 +316,10 @@ class BackpackAccountHttpAPI:
         list[BackpackSubaccount]
             The list of subaccounts.
         """
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/account/subaccounts",
             params={},
+            auth=True,
             instruction="accountQuery",
         )
         return self._decoder_subaccounts.decode(raw)
@@ -335,9 +347,10 @@ class BackpackAccountHttpAPI:
             "name": name,
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/account/subaccount",
             data=data,
+            auth=True,
             instruction="accountExecute",
         )
         return msgspec.json.decode(raw)
@@ -365,9 +378,10 @@ class BackpackAccountHttpAPI:
             "subaccountId": subaccount_id,
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/account/subaccount/switch",
             data=data,
+            auth=True,
             instruction="accountExecute",
         )
         return msgspec.json.decode(raw)

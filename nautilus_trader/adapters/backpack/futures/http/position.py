@@ -62,9 +62,10 @@ class BackpackFuturesPositionHttpAPI:
         if symbol:
             params["symbol"] = symbol
         
-        raw = await self._client._get_signed(
+        raw = await self._client._get(
             path="/api/v1/position",
             params=params,
+            auth=True,
             instruction="positionQuery",
         )
         
@@ -104,9 +105,10 @@ class BackpackFuturesPositionHttpAPI:
             "leverage": leverage,
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/position/leverage",
             data=data,
+            auth=True,
             instruction="positionLeverageModify",
         )
         
@@ -140,9 +142,10 @@ class BackpackFuturesPositionHttpAPI:
             "marginType": margin_type,
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/position/marginType",
             data=data,
+            auth=True,
             instruction="positionMarginTypeModify",
         )
         
@@ -173,9 +176,10 @@ class BackpackFuturesPositionHttpAPI:
             "amount": amount,
         }
         
-        raw = await self._client._post_signed(
+        raw = await self._client._post(
             path="/api/v1/position/margin",
             data=data,
+            auth=True,
             instruction="positionMarginAdd",
         )
         
