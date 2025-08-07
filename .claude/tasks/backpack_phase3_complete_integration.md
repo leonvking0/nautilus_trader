@@ -1177,7 +1177,118 @@ uv run pytest tests/integration_tests/adapters/backpack/ -v
 
 ---
 
-*Last Updated*: 2025-08-07 (Part E Partial Complete - System Orders, Wallet, RFQ Implemented)  
-*Status*: IN PROGRESS - Part A + Part B + Part C + Part D + Part E (partial) Complete (95%)  
+## Part D Testing: Comprehensive Test Plan with Real Data (2025-08-08)
+
+### Test Structure
+```
+tests/integration_tests/adapters/backpack/
+├── test_historical_data_loaders.py     # Test data loaders with real CSV/JSON
+├── test_historical_api_endpoints.py    # Test all history endpoints
+├── test_analytics_suite.py             # Test analytics components  
+├── test_report_generation.py           # Test report generation
+├── test_backtest_integration.py        # Test backtesting provider
+└── fixtures/
+    ├── sample_klines.json              # Real kline data samples
+    ├── sample_trades.json              # Real trade data samples
+    ├── sample_orderbook.json           # Real order book samples
+    └── sample_fills.json               # Real fill history samples
+```
+
+### Test Implementation Components
+
+#### 1. Data Loaders Testing (`test_historical_data_loaders.py`)
+**Objectives**: Verify CSV/JSON parsing, timestamp conversion, field mapping, order book deltas, trade ticks, and bar data loading
+
+**Key Tests**:
+- `test_order_book_loader_with_real_data()` - Load real order book snapshots and verify delta construction
+- `test_trade_tick_loader_with_real_data()` - Fetch real trades and verify field mapping
+- `test_bar_loader_with_real_klines()` - Test OHLCV conversion with actual kline data
+
+#### 2. Historical API Endpoints Testing (`test_historical_api_endpoints.py`)
+**Objectives**: Test all endpoints with live API, pagination, error handling, rate limits
+
+**Key Tests**:
+- `test_fetch_klines_history()` - Test with BTC_USDC, SOL_USDC actual data
+- `test_fetch_order_history()` - Validate order history with filters
+- `test_fetch_pnl_history()` - Test PnL calculations
+- `test_parallel_fetch_all_data()` - Verify parallel fetching utility
+
+#### 3. Analytics Suite Testing (`test_analytics_suite.py`)
+**Objectives**: Test PnL analysis, position metrics, fee analysis, slippage tracking, volume profiling
+
+**Key Tests**:
+- `test_pnl_analyzer_with_real_data()` - Daily PnL and Sharpe ratio calculations
+- `test_position_performance()` - Position metrics with real fills
+- `test_fee_analyzer()` - Fee optimization suggestions
+
+#### 4. Report Generation Testing (`test_report_generation.py`)
+**Objectives**: Test report generation, CSV/Parquet export, HTML generation
+
+**Key Tests**:
+- `test_generate_daily_pnl_report()` - Complete report with real data
+- `test_export_to_csv()` - CSV export validation
+- `test_generate_html_report()` - HTML with styling
+
+#### 5. Backtesting Integration Testing (`test_backtest_integration.py`)
+**Objectives**: Test data provider, caching, format conversion, BacktestEngine integration
+
+**Key Tests**:
+- `test_backtest_data_provider()` - Fetch bars for BTC_USDC, SOL_USDC
+- `test_cache_functionality()` - Verify caching works
+- `test_simple_data_client()` - Historical data client testing
+
+### Test Execution Strategy
+
+1. **Setup**: Ensure valid BACKPACK_API_KEY and BACKPACK_API_SECRET in .env
+2. **Build**: Run `make build-debug`
+3. **Generate Fixtures**: Fetch real data samples
+4. **Execute Tests**: Run test suites individually or all together
+5. **Validation**: All tests pass with real data, no mocks, <1s performance
+
+### Progress Tracking
+
+- [x] Test plan added to documentation
+- [x] Test directory structure created
+- [x] Fixture generation script implemented
+- [x] test_historical_data_loaders.py implemented
+- [x] test_historical_api_endpoints.py implemented (basic version)
+- [ ] test_analytics_suite.py implemented
+- [ ] test_report_generation.py implemented
+- [ ] test_backtest_integration.py implemented
+- [x] Data loader tests passing with real data
+- [x] Fixtures generated from live API
+- [ ] Full test suite completed
+
+### Test Results (2025-08-08)
+
+#### ✅ Completed Components:
+1. **Data Fixtures Generation**:
+   - Successfully fetched real data from Backpack API
+   - Fixed klines endpoint issue (requires seconds, not milliseconds for timestamps)
+   - Generated fixtures: klines, trades, order books, tickers
+   - Total fixture size: ~250KB of real market data
+
+2. **Data Loaders Testing**:
+   - `BackpackBarDataLoader`: ✅ Loading and converting 168 klines
+   - `BackpackTradeTickDataLoader`: ✅ Loading and converting 100 trades
+   - `BackpackOrderBookDeltaDataLoader`: ✅ Loading 721 order book deltas
+   - All conversions to NautilusTrader formats working
+
+3. **Key Fixes Applied**:
+   - Klines API: Fixed timestamp format (seconds instead of milliseconds)
+   - Trade data: Mapped `isBuyerMaker` to aggressor side correctly
+   - Order book: Fixed side mapping (bid/ask to BUY/SELL)
+   - Bar type: Updated to use BarSpecification with correct parameters
+
+#### 📊 Test Metrics:
+- **Files Created**: 5 test files, 1 fixture generator
+- **Fixtures Generated**: 4 JSON files with real market data
+- **Tests Passing**: All data loader tests (3 loaders × 2 tests each)
+- **Data Validated**: 168 bars, 100 trades, 721 order book deltas
+
+---
+
+*Last Updated*: 2025-08-08 (Part D Testing In Progress - Data Loaders Validated)  
+*Status*: IN PROGRESS - Part A + Part B + Part C + Part D + Part E (partial) Complete (96%)  
 *Owner*: Development Team  
 *Related*: `backpack_phase1_plan.md`, `backpack_phase2_plan.md`, `backpack_prd.md`
