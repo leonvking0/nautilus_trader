@@ -212,6 +212,81 @@ class BackpackUnifiedAccountManager:
             ts_event=self._unified_account.timestamp,
         )
     
+    def get_unified_positions(self) -> list[dict]:
+        """
+        Get unified position information across spot and futures.
+        
+        Returns
+        -------
+        list[dict]
+            List of unified position information.
+        """
+        if not self._unified_account:
+            return []
+        
+        positions = []
+        
+        # Add spot positions (from balances)
+        for balance in self._unified_account.balances:
+            if Decimal(balance.available) + Decimal(balance.locked) > 0:
+                positions.append({
+                    "type": "spot",
+                    "symbol": balance.symbol,
+                    "quantity": str(Decimal(balance.available) + Decimal(balance.locked)),
+                    "value_usdc": str(
+                        (Decimal(balance.available) + Decimal(balance.locked)) *
+                        Decimal(self._mark_prices.get(balance.symbol, "1"))
+                    ),
+                    "collateral_value": str(
+                        (Decimal(balance.available) + Decimal(balance.locked)) *
+                        Decimal(self._mark_prices.get(balance.symbol, "1")) *
+                        Decimal(self._collateral_weights.get(balance.symbol, "0"))
+                    ),
+                })
+        
+        # Add futures positions
+        for position in self._unified_account.futuresPositions:
+            positions.append({
+                "type": "futures",
+                "symbol": position.symbol,
+                "side": position.side,
+                "quantity": str(position.size),
+                "entry_price": str(position.entryPrice),
+                "mark_price": str(position.markPrice),
+                "unrealized_pnl": str(position.unrealizedPnl),
+                "margin_used": str(
+                    Decimal(position.size) * Decimal(position.markPrice) *
+                    Decimal(self._unified_account.initialMarginRate)
+                ),
+            })
+        
+        return positions
+    
+    def calculate_total_margin_used(self) -> Decimal:
+        """
+        Calculate total margin used across all positions.
+        
+        Returns
+        -------
+        Decimal
+            Total margin used.
+        """
+        if not self._unified_account:
+            return Decimal(0)
+        
+        total_margin = Decimal(0)
+        
+        # Add margin from futures positions
+        for position in self._unified_account.futuresPositions:
+            position_value = Decimal(position.size) * Decimal(position.markPrice)
+            margin_required = position_value * Decimal(self._unified_account.initialMarginRate)
+            total_margin += margin_required
+        
+        # Add margin from borrow positions
+        total_margin += Decimal(self._unified_account.totalBorrowLiability)
+        
+        return total_margin
+    
     async def check_and_execute_auto_borrow(
         self,
         required_usdc: Decimal,

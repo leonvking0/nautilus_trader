@@ -21,6 +21,7 @@ from decimal import Decimal
 
 import msgspec
 
+from nautilus_trader.adapters.backpack.common.account import BackpackUnifiedAccountManager
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
 from nautilus_trader.adapters.backpack.execution import BackpackExecutionClient
@@ -82,29 +83,25 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         self,
         loop: asyncio.AbstractEventLoop,
         http_client: BackpackHttpClient,
-        ws_client: BackpackWebSocketClient,
         msgbus: MessageBus,
         cache: Cache,
         clock: LiveClock,
-        instrument_provider: BackpackFuturesInstrumentProvider,
         config: BackpackExecClientConfig,
         name: str | None = None,
     ) -> None:
-        # Set futures-specific properties before calling parent init
-        self._account_type = AccountType.MARGIN
-        self._oms_type = OmsType.HEDGING
-        
+        # Initialize parent class
         super().__init__(
             loop=loop,
-            http_client=http_client,
-            ws_client=ws_client,
+            client=http_client,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
-            instrument_provider=instrument_provider,
             config=config,
-            name=name,
+            name=name or "BACKPACK-FUTURES",
         )
+        
+        # Override account type for futures
+        self._oms_type = OmsType.HEDGING  # Futures uses hedging
         
         # Futures-specific HTTP API
         self._futures_http_position = BackpackFuturesPositionHttpAPI(http_client)
@@ -122,10 +119,15 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
     
     async def _update_account_state(self) -> None:
         """Update account state including futures positions."""
+        # Call parent to update unified account
         await super()._update_account_state()
         
         # Fetch and process futures positions
         await self._update_positions()
+        
+        # Update unified account with futures positions
+        if self._account_manager and self._account_manager._unified_account:
+            self._account_manager._unified_account.futuresPositions = list(self._positions.values())
     
     async def _update_positions(self) -> None:
         """Update all futures positions."""
@@ -136,17 +138,19 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
                 self._positions[position.symbol] = position
                 
                 # Generate position status report
-                instrument_id = self._get_cached_instrument_id(position.symbol)
+                instrument_id = InstrumentId(Symbol(position.symbol), BACKPACK_VENUE)
                 
-                # Create position ID if using position IDs
-                position_id = None
-                if self._use_position_ids:
-                    position_id = PositionId(f"{position.symbol}_{position.side}")
+                # Create position ID
+                position_id = PositionId(f"{position.symbol}_{position.side}")
                 
-                report = position.parse_to_position_status_report(
-                    account=self.get_account(),
+                # Create position status report
+                report = PositionStatusReport(
+                    account_id=self._account_id,
                     instrument_id=instrument_id,
-                    position_id=position_id,
+                    position_side=backpack_futures_position_side_to_nautilus(position.side),
+                    quantity=position.size,
+                    report_id=position_id,
+                    ts_last=millis_to_nanos(int(position.timestamp * 1000)),
                     ts_init=self._clock.timestamp_ns(),
                 )
                 

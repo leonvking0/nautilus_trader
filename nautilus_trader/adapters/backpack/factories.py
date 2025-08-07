@@ -19,6 +19,7 @@ import asyncio
 import os
 from functools import lru_cache
 
+from nautilus_trader.adapters.backpack.common.account import BackpackUnifiedAccountManager
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.config import BackpackDataClientConfig
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
@@ -27,6 +28,7 @@ from nautilus_trader.adapters.backpack.execution import BackpackExecutionClient
 from nautilus_trader.adapters.backpack.futures.data import BackpackFuturesDataClient
 from nautilus_trader.adapters.backpack.futures.execution import BackpackFuturesExecutionClient
 from nautilus_trader.adapters.backpack.futures.providers import BackpackFuturesInstrumentProvider
+from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.providers import BackpackInstrumentProvider
 from nautilus_trader.adapters.backpack.spot.providers import BackpackSpotInstrumentProvider
@@ -425,11 +427,92 @@ class BackpackFuturesExecClientFactory(LiveExecClientFactory):
         return BackpackFuturesExecutionClient(
             loop=loop,
             http_client=http_client,
-            ws_client=ws_client,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
-            instrument_provider=instrument_provider,
             config=config,
             name=name,
         )
+
+
+def create_backpack_unified_execution_clients(
+    loop: asyncio.AbstractEventLoop,
+    msgbus: MessageBus,
+    cache: Cache,
+    clock: LiveClock,
+    config: BackpackExecClientConfig | None = None,
+) -> tuple[BackpackExecutionClient, BackpackFuturesExecutionClient]:
+    """
+    Create unified Backpack spot and futures execution clients sharing the same account.
+    
+    Parameters
+    ----------
+    loop : asyncio.AbstractEventLoop
+        The event loop for the clients.
+    msgbus : MessageBus
+        The message bus for the clients.
+    cache : Cache
+        The cache for the clients.
+    clock : LiveClock
+        The clock for the clients.
+    config : BackpackExecClientConfig, optional
+        The configuration for the clients.
+    
+    Returns
+    -------
+    tuple[BackpackExecutionClient, BackpackFuturesExecutionClient]
+        The spot and futures execution clients sharing a unified account manager.
+    
+    Notes
+    -----
+    Both clients will share the same BackpackUnifiedAccountManager instance,
+    ensuring consistent cross-margin calculations across spot and futures positions.
+    
+    """
+    from nautilus_trader.common.component import Logger
+    
+    config = config or BackpackExecClientConfig()
+    
+    # Create shared HTTP client
+    http_client = get_cached_backpack_http_client(
+        clock=clock,
+        api_key=config.api_key,
+        api_secret=config.api_secret,
+        testnet=config.testnet,
+    )
+    
+    # Create unified account manager
+    account_http = BackpackAccountHttpAPI(http_client)
+    logger = Logger(name="BackpackUnifiedAccount")
+    account_manager = BackpackUnifiedAccountManager(
+        account_http=account_http,
+        logger=logger,
+    )
+    
+    # Create spot execution client
+    spot_client = BackpackExecutionClient(
+        loop=loop,
+        client=http_client,
+        msgbus=msgbus,
+        cache=cache,
+        clock=clock,
+        config=config,
+        name="BACKPACK-SPOT",
+    )
+    
+    # Create futures execution client
+    futures_client = BackpackFuturesExecutionClient(
+        loop=loop,
+        http_client=http_client,
+        msgbus=msgbus,
+        cache=cache,
+        clock=clock,
+        config=config,
+        name="BACKPACK-FUTURES",
+    )
+    
+    # Share the account manager between both clients
+    spot_client.set_account_manager(account_manager)
+    futures_client.set_account_manager(account_manager)
+    
+    return spot_client, futures_client

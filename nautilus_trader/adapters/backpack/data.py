@@ -20,6 +20,7 @@ from typing import Any
 
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.config import BackpackDataClientConfig
+from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.parsing import parse_market
 from nautilus_trader.adapters.backpack.parsing import parse_order_book
@@ -94,16 +95,25 @@ class BackpackDataClient(LiveMarketDataClient):
         self._http_client = client
         self._log = Logger(name=name or BACKPACK_VENUE.value)
         
+        # Account HTTP API for collateral data
+        self._account_http = BackpackAccountHttpAPI(client)
+        
         # WebSocket subscriptions tracking
         self._ws_subscriptions: dict[str, set[InstrumentId]] = {
             "ticker": set(),
             "trades": set(),
             "depth": set(),
+            "markPrice": set(),  # For collateral valuation
         }
         
         # Last update timestamps for rate limiting
         self._last_quotes: dict[InstrumentId, int] = {}
         self._last_trades: dict[InstrumentId, int] = {}
+        
+        # Collateral weights and mark prices cache
+        self._collateral_weights: dict[str, float] = {}
+        self._mark_prices: dict[str, float] = {}
+        self._collateral_update_task: asyncio.Task | None = None
 
     async def _connect(self) -> None:
         """Connect the data client."""
@@ -111,6 +121,14 @@ class BackpackDataClient(LiveMarketDataClient):
         
         # Initialize instruments
         await self._load_instruments()
+        
+        # Load initial collateral weights
+        await self._update_collateral_weights()
+        
+        # Start periodic collateral weight updates (every 60 seconds)
+        self._collateral_update_task = asyncio.create_task(
+            self._periodic_collateral_update()
+        )
         
         # Connect WebSocket if needed
         if self._ws_subscriptions:
@@ -122,6 +140,14 @@ class BackpackDataClient(LiveMarketDataClient):
     async def _disconnect(self) -> None:
         """Disconnect the data client."""
         self._log.info("Disconnecting from Backpack...")
+        
+        # Cancel collateral update task
+        if self._collateral_update_task:
+            self._collateral_update_task.cancel()
+            try:
+                await self._collateral_update_task
+            except asyncio.CancelledError:
+                pass
         
         # Close WebSocket connections
         # Will be implemented in Phase 2
@@ -360,3 +386,75 @@ class BackpackDataClient(LiveMarketDataClient):
                 
         except Exception as e:
             self._log.error(f"Failed to poll order book for {instrument_id}: {e}")
+    
+    async def _update_collateral_weights(self) -> None:
+        """Update collateral weights from the exchange."""
+        try:
+            # Fetch collateral information
+            collateral = await self._account_http.fetch_collateral()
+            
+            # Update collateral weights
+            self._collateral_weights.clear()
+            for asset in collateral.assets:
+                self._collateral_weights[asset.asset] = float(asset.weight)
+            
+            # Fetch collateral details for mark prices
+            collateral_details = await self._account_http.fetch_collateral_details()
+            
+            # Update mark prices
+            self._mark_prices.clear()
+            for detail in collateral_details:
+                self._mark_prices[detail.asset] = float(detail.markPrice)
+            
+            self._log.debug(
+                f"Updated collateral weights for {len(self._collateral_weights)} assets",
+            )
+            
+        except Exception as e:
+            self._log.error(f"Failed to update collateral weights: {e}")
+    
+    async def _periodic_collateral_update(self) -> None:
+        """Periodically update collateral weights."""
+        while True:
+            try:
+                await asyncio.sleep(60)  # Update every 60 seconds
+                await self._update_collateral_weights()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self._log.error(f"Error in periodic collateral update: {e}")
+                await asyncio.sleep(5)  # Retry after 5 seconds on error
+    
+    def get_collateral_weight(self, asset: str) -> float | None:
+        """
+        Get the collateral weight for an asset.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset symbol (e.g., "BTC", "SOL", "USDC").
+        
+        Returns
+        -------
+        float | None
+            The collateral weight, or None if not available.
+        
+        """
+        return self._collateral_weights.get(asset)
+    
+    def get_mark_price(self, asset: str) -> float | None:
+        """
+        Get the mark price for an asset.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset symbol (e.g., "BTC", "SOL").
+        
+        Returns
+        -------
+        float | None
+            The mark price, or None if not available.
+        
+        """
+        return self._mark_prices.get(asset)

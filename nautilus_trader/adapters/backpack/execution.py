@@ -19,6 +19,7 @@ import asyncio
 from decimal import Decimal
 from typing import Any
 
+from nautilus_trader.adapters.backpack.common.account import BackpackUnifiedAccountManager
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.common.enums import (
     backpack_order_side_from_nautilus,
@@ -27,11 +28,12 @@ from nautilus_trader.adapters.backpack.common.enums import (
     backpack_time_in_force_from_nautilus,
 )
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
+from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.parsing import parse_balance
 from nautilus_trader.adapters.backpack.parsing import parse_order
 from nautilus_trader.adapters.backpack.websocket.client import BackpackWebSocketClient
-from nautilus_trader.accounting.accounts.cash import CashAccount
+from nautilus_trader.accounting.accounts.margin import MarginAccount
 from nautilus_trader.cache.cache import Cache
 from nautilus_trader.common.component import LiveClock
 from nautilus_trader.common.component import Logger
@@ -104,7 +106,7 @@ class BackpackExecutionClient(LiveExecutionClient):
             client_id=ClientId(name or BACKPACK_VENUE.value),
             venue=BACKPACK_VENUE,
             oms_type=OmsType.NETTING,  # Backpack uses netting accounts
-            account_type=AccountType.CASH,
+            account_type=AccountType.MARGIN,  # Unified account is margin type
             base_currency=USD,  # Can be configured
             msgbus=msgbus,
             cache=cache,
@@ -121,14 +123,43 @@ class BackpackExecutionClient(LiveExecutionClient):
         self._venue_order_ids: dict[ClientOrderId, VenueOrderId] = {}
         
         # Account information
-        self._account_id = AccountId(f"{BACKPACK_VENUE}-SPOT-{config.account_id or '001'}")
-        self._account: CashAccount | None = None
+        self._account_id = AccountId(f"{BACKPACK_VENUE}-UNIFIED-{config.account_id or '001'}")
+        self._account: MarginAccount | None = None
+        
+        # Unified account manager (will be shared with futures client)
+        self._account_manager: BackpackUnifiedAccountManager | None = None
+
+    def set_account_manager(self, account_manager: BackpackUnifiedAccountManager) -> None:
+        """
+        Set the unified account manager (for sharing with futures client).
+        
+        Parameters
+        ----------
+        account_manager : BackpackUnifiedAccountManager
+            The unified account manager to use.
+        """
+        self._account_manager = account_manager
+        self._log.info("Using shared unified account manager")
 
     async def _connect(self) -> None:
         """Connect the execution client."""
         self._log.info("Connecting to Backpack execution...")
         
-        # Initialize account
+        # Initialize unified account manager
+        if not self._account_manager:
+            account_http = BackpackAccountHttpAPI(self._http_client)
+            self._account_manager = BackpackUnifiedAccountManager(
+                account_http=account_http,
+                logger=self._log,
+            )
+            
+            # Initialize account
+            self._account = await self._account_manager.initialize(
+                account_id=self._account_id,
+                base_currency=self._base_currency,
+            )
+        
+        # Update account state
         await self._update_account_state()
         
         # Connect WebSocket for order updates
@@ -161,39 +192,50 @@ class BackpackExecutionClient(LiveExecutionClient):
     async def _update_account_state(self) -> None:
         """Update the account state from the exchange."""
         try:
-            balances_data = await self._http_client.fetch_balance()
+            if not self._account_manager:
+                self._log.error("Account manager not initialized")
+                return
+                
+            # Refresh unified account state
+            unified_account = await self._account_manager.refresh_account_state()
+            if not unified_account:
+                self._log.error("Failed to refresh unified account state")
+                return
             
-            balances = []
-            for balance_data in balances_data.get("balances", []):
-                account_balance = parse_balance(balance_data)
-                if account_balance:
-                    balances.append(account_balance)
-            
-            if not balances:
-                # Add a default balance if none exist
-                balances.append(
-                    AccountBalance(
-                        total=Money(0, USD),
-                        locked=Money(0, USD),
-                        free=Money(0, USD),
-                    ),
+            # Get the updated Nautilus account
+            if self._account_manager._nautilus_account:
+                self._account = self._account_manager._nautilus_account
+                
+                # Get unified position information
+                unified_positions = self._account_manager.get_unified_positions()
+                total_margin_used = self._account_manager.calculate_total_margin_used()
+                
+                # Create account state from the unified account
+                account_state = AccountState(
+                    account_id=self._account_id,
+                    account_type=AccountType.MARGIN,
+                    base_currency=self._base_currency,
+                    reported=True,
+                    balances=self._account.balances(),
+                    margins=self._account.margins(),
+                    info={
+                        "totalCollateral": str(unified_account.totalCollateral),
+                        "availableCollateral": str(unified_account.availableCollateral),
+                        "marginRatio": str(unified_account.marginRatio),
+                        "totalBorrowLiability": str(unified_account.totalBorrowLiability),
+                        "totalMarginUsed": str(total_margin_used),
+                        "positionCount": str(len(unified_positions)),
+                    },
+                    event_id=UUID4(),
+                    ts_event=self._clock.timestamp_ns(),
+                    ts_init=self._clock.timestamp_ns(),
                 )
-            
-            account_state = AccountState(
-                account_id=self._account_id,
-                account_type=AccountType.CASH,
-                base_currency=USD,
-                reported=True,
-                balances=balances,
-                margins=[],
-                info={},
-                event_id=UUID4(),
-                ts_event=self._clock.timestamp_ns(),
-                ts_init=self._clock.timestamp_ns(),
-            )
-            
-            self._send_account_state(account_state)
-            self._log.info(f"Updated account state for {self._account_id}")
+                
+                self._send_account_state(account_state)
+                self._log.info(
+                    f"Updated unified account state for {self._account_id} "
+                    f"with {len(unified_positions)} positions",
+                )
             
         except Exception as e:
             self._log.error(f"Failed to update account state: {e}")
@@ -206,6 +248,28 @@ class BackpackExecutionClient(LiveExecutionClient):
         self._pending_orders[order.client_order_id] = order
         
         try:
+            # Check and execute auto-borrow if needed (for buy orders)
+            if self._account_manager and order.side == OrderSide.BUY:
+                # Calculate required USDC for the order
+                if isinstance(order, LimitOrder):
+                    required_usdc = Decimal(str(order.price)) * Decimal(str(order.quantity))
+                elif isinstance(order, MarketOrder):
+                    # For market orders, estimate based on current market price
+                    # This is a simplified estimation - should use actual market price
+                    required_usdc = Decimal(str(order.quantity)) * Decimal("100")  # Placeholder
+                else:
+                    required_usdc = Decimal("0")
+                
+                # Check and execute auto-borrow
+                if required_usdc > 0:
+                    success = await self._account_manager.check_and_execute_auto_borrow(
+                        required_usdc=required_usdc,
+                    )
+                    if not success:
+                        self._log.warning(
+                            f"Auto-borrow check failed for order {order.client_order_id}",
+                        )
+            
             # Prepare order parameters
             params = {
                 "symbol": order.instrument_id.symbol.value,
