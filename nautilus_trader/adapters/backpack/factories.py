@@ -20,7 +20,9 @@ import os
 from functools import lru_cache
 
 from nautilus_trader.adapters.backpack.common.account import BackpackUnifiedAccountManager
+from nautilus_trader.adapters.backpack.common.constants import BACKPACK_BASE_URL_PROD
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
+from nautilus_trader.adapters.backpack.common.constants import BACKPACK_WS_URL_PROD
 from nautilus_trader.adapters.backpack.config import BackpackDataClientConfig
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
 from nautilus_trader.adapters.backpack.data import BackpackDataClient
@@ -156,7 +158,14 @@ class BackpackLiveDataClientFactory(LiveDataClientFactory):
         BackpackDataClient
 
         """
-        config = config or BackpackDataClientConfig()
+        if config is None:
+            # Use default values from environment
+            config = BackpackDataClientConfig(
+                api_key=os.getenv("BACKPACK_API_KEY"),
+                api_secret=os.getenv("BACKPACK_API_SECRET"),
+                base_url=BACKPACK_BASE_URL_PROD,
+                ws_url=BACKPACK_WS_URL_PROD,
+            )
         
         client = get_cached_backpack_http_client(
             clock=clock,
@@ -213,7 +222,14 @@ class BackpackLiveExecClientFactory(LiveExecClientFactory):
         BackpackExecutionClient
 
         """
-        config = config or BackpackExecClientConfig()
+        if config is None:
+            # Use default values from environment
+            config = BackpackExecClientConfig(
+                api_key=os.getenv("BACKPACK_API_KEY"),
+                api_secret=os.getenv("BACKPACK_API_SECRET"),
+                base_url=BACKPACK_BASE_URL_PROD,
+                ws_url=BACKPACK_WS_URL_PROD,
+            )
         
         client = get_cached_backpack_http_client(
             clock=clock,
@@ -222,12 +238,22 @@ class BackpackLiveExecClientFactory(LiveExecClientFactory):
             testnet=config.testnet,
         )
 
+        # Create instrument provider
+        instrument_provider = get_backpack_instrument_provider(
+            client=client,
+            clock=clock,
+            market_type="spot",
+            testnet=config.testnet,
+            config=config.instrument_provider,
+        )
+
         return BackpackExecutionClient(
             loop=loop,
             client=client,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
+            instrument_provider=instrument_provider,
             config=config,
             name=name,
         )
@@ -267,25 +293,23 @@ def get_backpack_instrument_provider(
     
     if market_type == "spot":
         return BackpackSpotInstrumentProvider(
-            http_client=client,
-            logger=logger,
+            client=client,
             clock=clock,
-            config=config,
+            config=config or InstrumentProviderConfig(),
         )
     elif market_type == "futures":
         return BackpackFuturesInstrumentProvider(
             http_client=client,
             logger=logger,
             clock=clock,
-            config=config,
+            config=config or InstrumentProviderConfig(),
         )
     else:
         # Return base provider for "all" or unknown types
         return BackpackInstrumentProvider(
-            http_client=client,
-            logger=logger,
+            client=client,
             clock=clock,
-            config=config,
+            config=config or InstrumentProviderConfig(),
         )
 
 
@@ -326,7 +350,14 @@ class BackpackFuturesDataClientFactory(LiveDataClientFactory):
         BackpackFuturesDataClient
 
         """
-        config = config or BackpackDataClientConfig()
+        if config is None:
+            # Use default values from environment
+            config = BackpackDataClientConfig(
+                api_key=os.getenv("BACKPACK_API_KEY"),
+                api_secret=os.getenv("BACKPACK_API_SECRET"),
+                base_url=BACKPACK_BASE_URL_PROD,
+                ws_url=BACKPACK_WS_URL_PROD,
+            )
         
         http_client = get_cached_backpack_http_client(
             clock=clock,
@@ -400,7 +431,14 @@ class BackpackFuturesExecClientFactory(LiveExecClientFactory):
         BackpackFuturesExecutionClient
 
         """
-        config = config or BackpackExecClientConfig()
+        if config is None:
+            # Use default values from environment
+            config = BackpackExecClientConfig(
+                api_key=os.getenv("BACKPACK_API_KEY"),
+                api_secret=os.getenv("BACKPACK_API_SECRET"),
+                base_url=BACKPACK_BASE_URL_PROD,
+                ws_url=BACKPACK_WS_URL_PROD,
+            )
         
         http_client = get_cached_backpack_http_client(
             clock=clock,
@@ -430,6 +468,7 @@ class BackpackFuturesExecClientFactory(LiveExecClientFactory):
             msgbus=msgbus,
             cache=cache,
             clock=clock,
+            instrument_provider=instrument_provider,
             config=config,
             name=name,
         )
@@ -489,6 +528,22 @@ def create_backpack_unified_execution_clients(
         logger=logger,
     )
     
+    # Create instrument providers
+    spot_instrument_provider = get_backpack_instrument_provider(
+        client=http_client,
+        clock=clock,
+        market_type="spot",
+        testnet=config.testnet,
+        config=config.instrument_provider,
+    )
+    
+    futures_instrument_provider = BackpackFuturesInstrumentProvider(
+        http_client=http_client,
+        logger=logger,
+        clock=clock,
+        config=config.instrument_provider,
+    )
+    
     # Create spot execution client
     spot_client = BackpackExecutionClient(
         loop=loop,
@@ -496,6 +551,7 @@ def create_backpack_unified_execution_clients(
         msgbus=msgbus,
         cache=cache,
         clock=clock,
+        instrument_provider=spot_instrument_provider,
         config=config,
         name="BACKPACK-SPOT",
     )
@@ -507,6 +563,7 @@ def create_backpack_unified_execution_clients(
         msgbus=msgbus,
         cache=cache,
         clock=clock,
+        instrument_provider=futures_instrument_provider,
         config=config,
         name="BACKPACK-FUTURES",
     )

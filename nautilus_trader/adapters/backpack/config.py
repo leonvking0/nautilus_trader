@@ -26,6 +26,26 @@ from nautilus_trader.config import LiveDataClientConfig
 from nautilus_trader.config import LiveExecClientConfig
 
 
+def _get_api_key(api_key: str | None = None) -> str | None:
+    """Get API key from parameter or environment."""
+    return api_key if api_key is not None else os.getenv("BACKPACK_API_KEY")
+
+
+def _get_api_secret(api_secret: str | None = None) -> str | None:
+    """Get API secret from parameter or environment."""
+    return api_secret if api_secret is not None else os.getenv("BACKPACK_API_SECRET")
+
+
+def _get_base_url(base_url: str | None = None) -> str:
+    """Get base URL from parameter or default."""
+    return base_url if base_url is not None else BACKPACK_BASE_URL_PROD
+
+
+def _get_ws_url(ws_url: str | None = None) -> str:
+    """Get WebSocket URL from parameter or default."""
+    return ws_url if ws_url is not None else BACKPACK_WS_URL_PROD
+
+
 class BackpackDataClientConfig(LiveDataClientConfig, frozen=True):
     """
     Configuration for Backpack data client.
@@ -53,18 +73,25 @@ class BackpackDataClientConfig(LiveDataClientConfig, frozen=True):
     ws_url: str | None = None
     testnet: bool = False
 
-    def __post_init__(self) -> None:
-        """Post-initialization to set defaults from environment."""
-        # For frozen dataclasses, we need to use __dict__ approach during initialization
-        # Override with environment variables if not set
-        if self.api_key is None:
-            super().__setattr__("api_key", os.getenv("BACKPACK_API_KEY"))
-        if self.api_secret is None:
-            super().__setattr__("api_secret", os.getenv("BACKPACK_API_SECRET"))
-        if self.base_url is None:
-            super().__setattr__("base_url", BACKPACK_BASE_URL_PROD)
-        if self.ws_url is None:
-            super().__setattr__("ws_url", BACKPACK_WS_URL_PROD)
+    @classmethod
+    def with_env_defaults(
+        cls,
+        api_key: str | None = None,
+        api_secret: str | None = None,
+        base_url: str | None = None,
+        ws_url: str | None = None,
+        testnet: bool = False,
+        **kwargs,
+    ) -> "BackpackDataClientConfig":
+        """Create config with environment defaults."""
+        return cls(
+            api_key=_get_api_key(api_key),
+            api_secret=_get_api_secret(api_secret),
+            base_url=_get_base_url(base_url),
+            ws_url=_get_ws_url(ws_url),
+            testnet=testnet,
+            **kwargs,
+        )
 
 
 class BackpackExecClientConfig(LiveExecClientConfig, frozen=True):
@@ -94,15 +121,22 @@ class BackpackExecClientConfig(LiveExecClientConfig, frozen=True):
     ws_url: str | None = None
     testnet: bool = False
 
-    def __post_init__(self) -> None:
-        """Post-initialization to set defaults from environment."""
-        # For frozen dataclasses, we need to use __dict__ approach during initialization
-        # Override with environment variables if not set
-        if self.api_key is None:
-            super().__setattr__("api_key", os.getenv("BACKPACK_API_KEY"))
-        if self.api_secret is None:
-            super().__setattr__("api_secret", os.getenv("BACKPACK_API_SECRET"))
-        if self.base_url is None:
-            super().__setattr__("base_url", BACKPACK_BASE_URL_PROD)
-        if self.ws_url is None:
-            super().__setattr__("ws_url", BACKPACK_WS_URL_PROD)
+    @classmethod
+    def with_env_defaults(
+        cls,
+        api_key: str | None = None,
+        api_secret: str | None = None,
+        base_url: str | None = None,
+        ws_url: str | None = None,
+        testnet: bool = False,
+        **kwargs,
+    ) -> "BackpackExecClientConfig":
+        """Create config with environment defaults."""
+        return cls(
+            api_key=_get_api_key(api_key),
+            api_secret=_get_api_secret(api_secret),
+            base_url=_get_base_url(base_url),
+            ws_url=_get_ws_url(ws_url),
+            testnet=testnet,
+            **kwargs,
+        )

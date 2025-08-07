@@ -37,13 +37,11 @@ class TestBackpackWebSocketIntegration:
         self.handler = AsyncMock()
         
         self.client = BackpackWebSocketClient(
-            base_url="wss://ws.backpack.exchange",
-            handler=self.handler,
-            clock=self.clock,
-            logger=self.logger,
             api_key=None,
             api_secret=None,
             testnet=False,
+            handler=self.handler,
+            logger=self.logger,
         )
 
     @pytest.mark.asyncio

@@ -62,8 +62,7 @@ class BackpackFuturesInstrumentProvider(BackpackInstrumentProvider):
         config: InstrumentProviderConfig | None = None,
     ) -> None:
         super().__init__(
-            http_client=http_client,
-            logger=logger,
+            client=http_client,
             clock=clock,
             config=config,
         )

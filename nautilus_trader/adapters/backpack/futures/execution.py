@@ -25,6 +25,7 @@ from nautilus_trader.adapters.backpack.common.account import BackpackUnifiedAcco
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
 from nautilus_trader.adapters.backpack.execution import BackpackExecutionClient
+from nautilus_trader.common.providers import InstrumentProvider
 from nautilus_trader.adapters.backpack.futures.enums import BackpackFuturesPositionSide
 from nautilus_trader.adapters.backpack.futures.enums import backpack_futures_position_side_to_nautilus
 from nautilus_trader.adapters.backpack.futures.enums import nautilus_position_side_to_backpack_futures
@@ -86,6 +87,7 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         msgbus: MessageBus,
         cache: Cache,
         clock: LiveClock,
+        instrument_provider: InstrumentProvider,
         config: BackpackExecClientConfig,
         name: str | None = None,
     ) -> None:
@@ -96,6 +98,7 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
             msgbus=msgbus,
             cache=cache,
             clock=clock,
+            instrument_provider=instrument_provider,
             config=config,
             name=name or "BACKPACK-FUTURES",
         )
@@ -114,8 +117,8 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         self._decoder_position_update = msgspec.json.Decoder(BackpackFuturesPositionUpdate)
         
         self._log.info("BackpackFuturesExecutionClient initialized", LogColor.GREEN)
-        self._log.info(f"Account type: {self._account_type}", LogColor.BLUE)
-        self._log.info(f"OMS type: {self._oms_type}", LogColor.BLUE)
+        self._log.info(f"Account type: {self.account_type}", LogColor.BLUE)
+        self._log.info(f"OMS type: {self.oms_type}", LogColor.BLUE)
     
     async def _update_account_state(self) -> None:
         """Update account state including futures positions."""

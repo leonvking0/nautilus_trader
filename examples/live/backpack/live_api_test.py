@@ -153,6 +153,16 @@ class BackpackLiveAPITest:
             config=data_config,
         )
         
+        # Create instrument provider
+        from nautilus_trader.adapters.backpack.spot.providers import BackpackSpotInstrumentProvider
+        from nautilus_trader.config import InstrumentProviderConfig
+        
+        instrument_provider = BackpackSpotInstrumentProvider(
+            client=self.http_client,
+            clock=self.clock,
+            config=InstrumentProviderConfig(load_all=False),
+        )
+        
         # Create execution client  
         exec_config = BackpackExecClientConfig(
             api_key=self.api_key,
@@ -165,6 +175,7 @@ class BackpackLiveAPITest:
             msgbus=self.msgbus,
             cache=self.cache,
             clock=self.clock,
+            instrument_provider=instrument_provider,
             config=exec_config,
         )
         

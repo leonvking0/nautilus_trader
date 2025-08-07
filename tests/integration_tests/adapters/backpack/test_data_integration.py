@@ -79,7 +79,12 @@ class TestBackpackDataIntegration:
             clock=self.clock,
         )
 
-        self.config = BackpackDataClientConfig()
+        self.config = BackpackDataClientConfig(
+            api_key="test_key",
+            api_secret="test_secret",
+            base_url="https://api.backpack.exchange",
+            ws_url="wss://ws.backpack.exchange",
+        )
         
         self.data_client = BackpackDataClient(
             loop=self.loop,

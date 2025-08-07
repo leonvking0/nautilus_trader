@@ -36,8 +36,8 @@ from nautilus_trader.adapters.backpack.websocket.client import BackpackWebSocket
 from nautilus_trader.accounting.accounts.margin import MarginAccount
 from nautilus_trader.cache.cache import Cache
 from nautilus_trader.common.component import LiveClock
-from nautilus_trader.common.component import Logger
 from nautilus_trader.common.component import MessageBus
+from nautilus_trader.common.providers import InstrumentProvider
 from nautilus_trader.core.correctness import PyCondition
 from nautilus_trader.core.datetime import millis_to_nanos
 from nautilus_trader.core.uuid import UUID4
@@ -84,6 +84,8 @@ class BackpackExecutionClient(LiveExecutionClient):
         The cache for the client.
     clock : LiveClock
         The clock for the client.
+    instrument_provider : InstrumentProvider
+        The instrument provider for the client.
     config : BackpackExecClientConfig
         The configuration for the client.
     name : str, optional
@@ -98,6 +100,7 @@ class BackpackExecutionClient(LiveExecutionClient):
         msgbus: MessageBus,
         cache: Cache,
         clock: LiveClock,
+        instrument_provider: InstrumentProvider,
         config: BackpackExecClientConfig,
         name: str | None = None,
     ) -> None:
@@ -108,6 +111,7 @@ class BackpackExecutionClient(LiveExecutionClient):
             oms_type=OmsType.NETTING,  # Backpack uses netting accounts
             account_type=AccountType.MARGIN,  # Unified account is margin type
             base_currency=USD,  # Can be configured
+            instrument_provider=instrument_provider,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
@@ -115,7 +119,6 @@ class BackpackExecutionClient(LiveExecutionClient):
         )
 
         self._http_client = client
-        self._log = Logger(name=name or BACKPACK_VENUE.value)
         self._ws_client: BackpackWebSocketClient | None = None
         
         # Order tracking
@@ -123,7 +126,7 @@ class BackpackExecutionClient(LiveExecutionClient):
         self._venue_order_ids: dict[ClientOrderId, VenueOrderId] = {}
         
         # Account information
-        self._account_id = AccountId(f"{BACKPACK_VENUE}-UNIFIED-{config.account_id or '001'}")
+        self._account_id = AccountId(f"{BACKPACK_VENUE}-UNIFIED-001")
         self._account: MarginAccount | None = None
         
         # Unified account manager (will be shared with futures client)
@@ -156,7 +159,7 @@ class BackpackExecutionClient(LiveExecutionClient):
             # Initialize account
             self._account = await self._account_manager.initialize(
                 account_id=self._account_id,
-                base_currency=self._base_currency,
+                base_currency=self.base_currency,
             )
         
         # Update account state

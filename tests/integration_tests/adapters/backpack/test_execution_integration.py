@@ -94,7 +94,22 @@ class TestBackpackExecutionIntegration:
             clock=self.clock,
         )
 
-        self.config = BackpackExecClientConfig()
+        self.config = BackpackExecClientConfig(
+            api_key="test_key",
+            api_secret="test_secret",
+            base_url="https://api.backpack.exchange",
+            ws_url="wss://ws.backpack.exchange",
+        )
+        
+        # Create instrument provider
+        from nautilus_trader.adapters.backpack.spot.providers import BackpackSpotInstrumentProvider
+        from nautilus_trader.config import InstrumentProviderConfig
+        
+        self.instrument_provider = BackpackSpotInstrumentProvider(
+            client=self.http_client,
+            clock=self.clock,
+            config=InstrumentProviderConfig(load_all=False),
+        )
         
         self.exec_client = BackpackExecutionClient(
             loop=self.loop,
@@ -102,6 +117,7 @@ class TestBackpackExecutionIntegration:
             msgbus=self.msgbus,
             cache=self.cache,
             clock=self.clock,
+            instrument_provider=self.instrument_provider,
             config=self.config,
         )
     
