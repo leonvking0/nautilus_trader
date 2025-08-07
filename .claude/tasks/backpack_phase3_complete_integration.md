@@ -7,7 +7,29 @@ Phase 3 focuses on achieving complete feature parity with the Binance integratio
 
 **Start Date**: 2025-08-07  
 **Target Duration**: 6 weeks  
-**Current Progress**: 15% (Part A Complete)
+**Current Progress**: 25% (Part A + A.2 Complete)  
+**⚠️ Critical Issue**: Unified account integration incomplete - blocking further development
+
+### 📋 Summary for Next Developer
+
+**What's Done:**
+- ✅ Futures infrastructure (data, execution, providers)
+- ✅ Unified account architecture (schemas, calculator, auto-borrow)
+- ✅ Account HTTP endpoints and management
+
+**What's Needed (URGENT):**
+1. **Integrate unified account into execution clients** - Both spot and futures must use `BackpackUnifiedAccountManager`
+2. **Test the integration** - Ensure cross-margin calculations work correctly
+3. **Update position management** - All positions must consider unified margin
+
+**Key Files to Modify:**
+- `nautilus_trader/adapters/backpack/execution.py` - Add unified account manager
+- `nautilus_trader/adapters/backpack/futures/execution.py` - Share unified account
+- `nautilus_trader/adapters/backpack/data.py` - Add collateral weight updates
+
+**Reference Implementation:**
+- See `common/account.py` for `BackpackUnifiedAccountManager` usage
+- See integration code example in section A.2.2
 
 ## Comparative Analysis Summary
 
@@ -222,49 +244,98 @@ After reviewing Backpack's documentation, we discovered that Backpack uses a **u
 ### A.2.1 Account Architecture Refactoring
 **Priority**: CRITICAL  
 **Duration**: 2 days  
-**Status**: IN PROGRESS
+**Status**: ✅ COMPLETE (2025-08-07)
 
 #### Required Changes
 ```
 nautilus_trader/adapters/backpack/
 ├── common/
-│   ├── account.py          # Unified account management (NEW)
-│   ├── collateral.py       # Cross-collateral calculator (NEW)
-│   └── borrow.py          # Auto-borrow functionality (NEW)
+│   ├── account.py          ✅ # Unified account management (DONE)
+│   ├── collateral.py       ✅ # Cross-collateral calculator (DONE)
+│   └── borrow.py          ✅ # Auto-borrow functionality (DONE)
 ├── http/
-│   └── account.py         # Complete account endpoints (UPDATE)
+│   └── account.py         ✅ # Complete account endpoints (DONE)
 └── schemas/
-    └── account.py         # Unified account schemas (UPDATE)
+    └── account.py         ✅ # Unified account schemas (DONE)
 ```
 
 #### Implementation Tasks
-- [ ] Create BackpackUnifiedAccount schema with multi-currency support
-- [ ] Implement BackpackCollateralCalculator for weighted collateral
-- [ ] Add auto-borrow detection and execution
-- [ ] Refactor execution clients to use unified account
-- [ ] Add subaccount support (max 10)
-- [ ] Implement cross-margin calculations
+- [x] Create BackpackUnifiedAccount schema with multi-currency support
+- [x] Implement BackpackCollateralCalculator for weighted collateral
+- [x] Add auto-borrow detection and execution
+- [ ] Refactor execution clients to use unified account (IN PROGRESS)
+- [x] Add subaccount support (max 10)
+- [x] Implement cross-margin calculations
 
-#### Key Features to Implement
+#### Key Features Implemented ✅
 1. **Unified Account State**:
-   - Single account for spot, margin, and futures
-   - Shared collateral pool with asset weights
-   - Cross-position margin calculations
+   - ✅ Single account for spot, margin, and futures
+   - ✅ Shared collateral pool with asset weights
+   - ✅ Cross-position margin calculations
    
 2. **Collateral Management**:
-   - Multi-currency collateral with haircuts
-   - Dynamic weight adjustments based on size
-   - Real-time collateral value calculations
+   - ✅ Multi-currency collateral with haircuts
+   - ✅ Dynamic weight adjustments based on size
+   - ✅ Real-time collateral value calculations
    
 3. **Auto-Borrow System**:
-   - Automatic USDC borrows when insufficient
-   - Prevents unnecessary liquidations
-   - Tracks borrow liability
+   - ✅ Automatic USDC borrows when insufficient
+   - ✅ Prevents unnecessary liquidations
+   - ✅ Tracks borrow liability
    
 4. **Risk Management**:
-   - Initial Margin Rate (IMR)
-   - Maintenance Margin Rate (MMR)
-   - Cross-liquidation triggers
+   - ✅ Initial Margin Rate (IMR)
+   - ✅ Maintenance Margin Rate (MMR)
+   - ✅ Cross-liquidation triggers
+
+### A.2.2 Integration Tasks (REMAINING)
+**Priority**: CRITICAL  
+**Duration**: 1 day  
+**Status**: TODO
+
+#### Tasks for Next Developer
+1. **Refactor Execution Clients** (CRITICAL):
+   - [ ] Update `BackpackExecutionClient` to use `BackpackUnifiedAccountManager`
+   - [ ] Update `BackpackFuturesExecutionClient` to share unified account
+   - [ ] Remove separate account type assumptions
+   - [ ] Ensure both clients share same collateral pool
+
+2. **Update Data Clients**:
+   - [ ] Integrate collateral weights into market data
+   - [ ] Add mark price feeds for collateral calculation
+   - [ ] Subscribe to margin rate updates
+
+3. **Position Management Updates**:
+   - [ ] Unify position tracking across spot/futures
+   - [ ] Calculate combined margin requirements
+   - [ ] Handle cross-liquidation scenarios
+   - [ ] Update position reports with unified margin
+
+4. **Testing & Validation**:
+   - [ ] Test unified account initialization
+   - [ ] Validate auto-borrow triggers
+   - [ ] Test cross-margin calculations
+   - [ ] Verify subaccount isolation
+
+#### Integration Code Example:
+```python
+# In BackpackExecutionClient.__init__
+self._account_manager = BackpackUnifiedAccountManager(
+    account_http=BackpackAccountHttpAPI(http_client),
+    logger=self._log,
+)
+
+# In _update_account_state
+account = await self._account_manager.initialize(
+    account_id=self._account_id,
+    base_currency=USDC,
+)
+
+# Before order submission
+await self._account_manager.check_and_execute_auto_borrow(
+    required_usdc=order_value,
+)
+```
 
 ---
 
@@ -670,7 +741,8 @@ class BackpackBarDataLoader:
 
 ## Progress Log
 
-### 2025-08-07: Part A Complete + Critical Discovery
+### 2025-08-07: Part A & A.2 Complete
+#### Morning Session - Part A (Futures Infrastructure)
 - ✅ Created futures directory structure and infrastructure
 - ✅ Implemented BackpackFuturesDataClient with streaming support
 - ✅ Implemented BackpackFuturesExecutionClient with position management
@@ -678,9 +750,23 @@ class BackpackBarDataLoader:
 - ✅ Created futures instrument provider for perpetual contracts
 - ✅ Integrated leverage and margin controls
 - ✅ Added factory methods for futures clients
-- ⚠️ **CRITICAL**: Discovered Backpack uses unified cross-margin account model
-- 🔧 **Starting Part A.2**: Refactoring account architecture for unified model
-- **Next**: Complete unified account refactoring, then Part B
+
+#### Afternoon Session - Critical Discovery & Part A.2
+- ⚠️ **CRITICAL DISCOVERY**: Backpack uses unified cross-margin account (not separated like Binance)
+- ✅ Implemented BackpackUnifiedAccount schema
+- ✅ Created BackpackCollateralCalculator for multi-currency collateral
+- ✅ Added BackpackAutoBorrow for automatic USDC borrows
+- ✅ Implemented complete account HTTP endpoints
+- ✅ Created BackpackUnifiedAccountManager
+- ✅ Added subaccount support (max 10 accounts)
+
+#### Remaining Critical Tasks (A.2.2)
+- 🔴 **URGENT**: Refactor execution clients to use unified account
+- 🔴 **URGENT**: Update position management for cross-margin
+- 🟡 Integrate collateral weights into data clients
+- 🟡 Create comprehensive test suite
+
+**Next Developer Action**: Complete A.2.2 integration tasks before proceeding to Part B
 
 ---
 
