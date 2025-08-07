@@ -292,12 +292,39 @@ class BackpackHttpClient:
         start_time: int | None = None,
         end_time: int | None = None,
     ) -> list[list[Any]]:
-        """Fetch klines (candlesticks) for a symbol."""
+        """
+        Fetch klines (candlesticks) for a symbol.
+        
+        Parameters
+        ----------
+        symbol : str
+            The trading pair symbol (e.g., 'BTC_USDC')
+        interval : str
+            Kline interval (1m, 5m, 15m, 1h, 4h, 1d, etc.)
+        start_time : int, optional
+            Start time in milliseconds or seconds (auto-detected)
+        end_time : int, optional
+            End time in milliseconds or seconds (auto-detected)
+            
+        Returns
+        -------
+        list[list[Any]]
+            List of klines
+        
+        """
         params = {"symbol": symbol, "interval": interval}
         if start_time:
-            params["startTime"] = start_time
+            # Backpack API expects seconds, convert if in milliseconds
+            if start_time > 4102444800:  # Jan 1, 2100 in seconds
+                params["startTime"] = start_time // 1000
+            else:
+                params["startTime"] = start_time
         if end_time:
-            params["endTime"] = end_time
+            # Same conversion for end_time
+            if end_time > 4102444800:
+                params["endTime"] = end_time // 1000
+            else:
+                params["endTime"] = end_time
         return await self._get(BACKPACK_API_PATHS["klines"], params=params)
 
     # Private API methods

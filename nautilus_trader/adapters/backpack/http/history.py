@@ -93,15 +93,24 @@ class BackpackHistoryHttpAPI:
             "limit": str(limit),
         }
         if start_time:
-            params["startTime"] = str(start_time)
+            # Backpack API expects timestamps in seconds, not milliseconds
+            # If timestamp appears to be in milliseconds (> year 2100 in seconds), convert it
+            if start_time > 4102444800:  # Jan 1, 2100 in seconds
+                params["startTime"] = str(start_time // 1000)
+            else:
+                params["startTime"] = str(start_time)
         if end_time:
-            params["endTime"] = str(end_time)
+            # Same conversion for end_time
+            if end_time > 4102444800:
+                params["endTime"] = str(end_time // 1000)
+            else:
+                params["endTime"] = str(end_time)
         
-        raw = await self._client._get(
+        # _get already returns decoded JSON
+        return await self._client._get(
             path="/api/v1/klines",
             params=params,
         )
-        return msgspec.json.decode(raw)
 
     async def fetch_trades_history(
         self,
