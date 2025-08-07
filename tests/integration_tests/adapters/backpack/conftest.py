@@ -17,7 +17,9 @@
 
 import asyncio
 import json
+import os
 from decimal import Decimal
+from enum import Enum
 from pathlib import Path
 
 import pytest
@@ -40,6 +42,23 @@ from nautilus_trader.model.objects import AccountBalance
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
+
+
+class TestMode(Enum):
+    """Test execution mode."""
+    MOCK = "mock"  # Use mock data only
+    LIVE = "live"  # Use live API only
+    HYBRID = "hybrid"  # Use mock by default, live when specified
+
+
+# Get test mode from environment variable
+TEST_MODE = TestMode(os.getenv("BACKPACK_TEST_MODE", "mock"))
+
+
+@pytest.fixture(scope="session")
+def test_mode() -> TestMode:
+    """Return the current test mode."""
+    return TEST_MODE
 
 
 @pytest.fixture(scope="session")
@@ -109,6 +128,12 @@ def balance_response(responses_dir):
 def order_response(responses_dir):
     """Load order endpoint response fixture."""
     return load_fixture(responses_dir / "order.json")
+
+
+@pytest.fixture
+def orders_response(responses_dir):
+    """Load orders endpoint response fixture."""
+    return load_fixture(responses_dir / "orders.json")
 
 
 @pytest.fixture()

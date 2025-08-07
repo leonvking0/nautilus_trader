@@ -22,7 +22,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from nautilus_trader.adapters.backpack.websocket.client import BackpackWebSocketClient
-from nautilus_trader.adapters.backpack.websocket.types import WSMessageType
 from nautilus_trader.common.component import LiveClock
 from nautilus_trader.common.component import Logger
 

@@ -385,6 +385,21 @@ pytest-memory-tracking:  #-- Run Python tests with memory tracking enabled
 	$(info $(M) Running Python tests with memory tracking enabled...)
 	MEMORY_TRACKING_ENABLED_PY=true uv run --active --no-sync pytest --new-first --failed-first -v -n logical --dist=loadgroup
 
+.PHONY: test-backpack-mock
+test-backpack-mock:  #-- Run Backpack adapter tests in mock mode
+	$(info $(M) Running Backpack adapter tests in mock mode...)
+	BACKPACK_TEST_MODE=mock uv run --active --no-sync pytest tests/integration_tests/adapters/backpack/ -v
+
+.PHONY: test-backpack-live
+test-backpack-live:  #-- Run Backpack adapter tests in live mode (requires API keys)
+	$(info $(M) Running Backpack adapter tests in live mode...)
+	BACKPACK_TEST_MODE=live uv run --active --no-sync pytest tests/integration_tests/adapters/backpack/ -v -k "not performance"
+
+.PHONY: test-backpack-performance
+test-backpack-performance:  #-- Run Backpack performance tests (live mode only)
+	$(info $(M) Running Backpack performance tests...)
+	BACKPACK_TEST_MODE=live uv run --active --no-sync pytest tests/integration_tests/adapters/backpack/test_performance.py -v
+
 .PHONY: test-performance
 test-performance:  #-- Run performance tests with codspeed benchmarking
 	uv run --active --no-sync pytest tests/performance_tests --benchmark-disable-gc --codspeed
