@@ -93,3 +93,124 @@ class BackpackCancelResponse(msgspec.Struct, frozen=True):
     """HTTP response from Backpack DELETE /api/order."""
 
     order: BackpackOrder
+
+
+# Unified Account Model Schemas (Multi-currency Cross-margin)
+
+class BackpackCollateralWeight(msgspec.Struct, frozen=True):
+    """Collateral weight (haircut) for an asset."""
+    
+    asset: str
+    weight: str  # 0.0 to 1.0, where 1.0 = 100% collateral value
+    tier: int | None = None  # Size tier affecting weight
+
+
+class BackpackCapital(msgspec.Struct, frozen=True):
+    """HTTP response from Backpack GET /api/v1/capital."""
+    
+    balances: list[BackpackBalance]
+    totalCollateral: str  # Total USD value of all collateral
+    availableCollateral: str  # Available for trading
+    initialMarginRate: str  # IMR - for opening positions
+    maintenanceMarginRate: str  # MMR - liquidation threshold
+    totalBorrowLiability: str  # Total borrowed amount in USD
+    unsettledBalances: str  # Pending settlements
+    unrealizedPnl: str  # Unrealized P&L across all positions
+    
+    
+class BackpackCollateral(msgspec.Struct, frozen=True):
+    """HTTP response from Backpack GET /api/v1/collateral."""
+    
+    assets: list[BackpackCollateralWeight]
+    totalWeightedCollateral: str
+    
+    
+class BackpackCollateralDetail(msgspec.Struct, frozen=True):
+    """HTTP response from Backpack GET /api/v1/capital/collateral."""
+    
+    asset: str
+    quantity: str
+    markPrice: str
+    collateralValue: str  # quantity * markPrice * weight
+    weight: str
+    usdValue: str
+    
+    
+class BackpackBorrowPosition(msgspec.Struct, frozen=True):
+    """Borrow position for an asset."""
+    
+    asset: str
+    borrowed: str
+    interest: str
+    interestRate: str
+    cumulativeInterest: str
+    timestamp: int
+    
+    
+class BackpackAccountLimits(msgspec.Struct, frozen=True):
+    """Account trading limits."""
+    
+    maxLeverage: int
+    maxPositions: int
+    maxOrders: int
+    maxBorrowUSD: str
+    maxSubaccounts: int
+    currentSubaccounts: int
+    
+    
+class BackpackUnifiedAccount(msgspec.Struct, frozen=True):
+    """
+    Unified account state for Backpack's cross-margin model.
+    
+    This represents the complete account state where spot, margin,
+    and futures all share the same collateral pool.
+    """
+    
+    # Account identification
+    accountId: str
+    subaccountId: str | None
+    
+    # Balances (multi-currency)
+    balances: list[BackpackBalance]
+    
+    # Collateral information
+    totalCollateral: str  # Total USD value
+    availableCollateral: str  # Available for new positions
+    collateralWeights: list[BackpackCollateralWeight]
+    
+    # Margin rates
+    initialMarginRate: str  # IMR - required to open positions
+    maintenanceMarginRate: str  # MMR - liquidation threshold
+    marginRatio: str  # Current margin usage ratio
+    
+    # Positions across all markets
+    spotBalances: list[BackpackBalance]  # Spot holdings
+    futuresPositions: list  # Futures positions (from position endpoint)
+    borrowPositions: list[BackpackBorrowPosition]  # Active borrows
+    
+    # Risk metrics
+    totalBorrowLiability: str  # Total borrowed in USD
+    unsettledBalances: str  # Pending settlements
+    unrealizedPnl: str  # Total unrealized P&L
+    realizedPnl: str  # Total realized P&L
+    
+    # Liquidation info
+    liquidationPrice: str | None  # Estimated liquidation price
+    timeTillLiquidation: int | None  # Milliseconds till liquidation
+    
+    # Account limits
+    limits: BackpackAccountLimits | None
+    
+    # Timestamps
+    timestamp: int  # Last update timestamp
+    
+    
+class BackpackSubaccount(msgspec.Struct, frozen=True):
+    """Subaccount information."""
+    
+    subaccountId: str
+    name: str
+    isActive: bool
+    createdAt: int
+    totalCollateral: str
+    marginRatio: str
