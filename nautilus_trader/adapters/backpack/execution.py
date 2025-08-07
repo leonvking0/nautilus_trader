@@ -32,6 +32,9 @@ from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAP
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.parsing import parse_balance
 from nautilus_trader.adapters.backpack.parsing import parse_order
+from nautilus_trader.adapters.backpack.schemas.advanced_orders import BackpackAdvancedOrderParams
+from nautilus_trader.adapters.backpack.schemas.advanced_orders import backpack_order_type_for_stop
+from nautilus_trader.adapters.backpack.schemas.advanced_orders import backpack_trigger_type_from_nautilus
 from nautilus_trader.adapters.backpack.websocket.client import BackpackWebSocketClient
 from nautilus_trader.accounting.accounts.margin import MarginAccount
 from nautilus_trader.cache.cache import Cache
@@ -54,6 +57,7 @@ from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import OrderStatus
 from nautilus_trader.model.enums import OrderType
 from nautilus_trader.model.enums import TimeInForce
+from nautilus_trader.model.enums import TriggerType
 from nautilus_trader.model.events import AccountState
 from nautilus_trader.model.identifiers import AccountId
 from nautilus_trader.model.identifiers import ClientId
@@ -66,6 +70,9 @@ from nautilus_trader.model.objects import Money
 from nautilus_trader.model.orders import LimitOrder
 from nautilus_trader.model.orders import MarketOrder
 from nautilus_trader.model.orders import Order
+from nautilus_trader.model.orders import StopLimitOrder
+from nautilus_trader.model.orders import StopMarketOrder
+from nautilus_trader.model.orders import TrailingStopMarketOrder
 
 
 class BackpackExecutionClient(LiveExecutionClient):
@@ -131,6 +138,15 @@ class BackpackExecutionClient(LiveExecutionClient):
         
         # Unified account manager (will be shared with futures client)
         self._account_manager: BackpackUnifiedAccountManager | None = None
+        
+        # Order submission method mapping
+        self._submit_order_methods = {
+            OrderType.MARKET: self._submit_market_order,
+            OrderType.LIMIT: self._submit_limit_order,
+            OrderType.STOP_MARKET: self._submit_stop_market_order,
+            OrderType.STOP_LIMIT: self._submit_stop_limit_order,
+            OrderType.TRAILING_STOP_MARKET: self._submit_trailing_stop_market_order,
+        }
 
     def set_account_manager(self, account_manager: BackpackUnifiedAccountManager) -> None:
         """
@@ -273,28 +289,22 @@ class BackpackExecutionClient(LiveExecutionClient):
                             f"Auto-borrow check failed for order {order.client_order_id}",
                         )
             
-            # Prepare order parameters
-            params = {
-                "symbol": order.instrument_id.symbol.value,
-                "side": backpack_order_side_from_nautilus(order.side),
-                "quantity": str(order.quantity),
-                "client_order_id": str(order.client_order_id),
-            }
-            
-            if isinstance(order, LimitOrder):
-                params["order_type"] = "Limit"
-                params["price"] = str(order.price)
-                params["time_in_force"] = backpack_time_in_force_from_nautilus(
-                    order.time_in_force,
+            # Use order type specific submission method
+            submit_method = self._submit_order_methods.get(order.order_type)
+            if submit_method is None:
+                self._log.error(f"Unsupported order type: {order.order_type}")
+                self.generate_order_rejected(
+                    strategy_id=order.strategy_id,
+                    instrument_id=order.instrument_id,
+                    client_order_id=order.client_order_id,
+                    reason=f"Unsupported order type: {order.order_type}",
+                    ts_event=self._clock.timestamp_ns(),
                 )
-            elif isinstance(order, MarketOrder):
-                params["order_type"] = "Market"
-            else:
-                self._log.error(f"Unsupported order type: {type(order)}")
+                self._pending_orders.pop(order.client_order_id, None)
                 return
             
-            # Submit order to exchange
-            response = await self._http_client.create_order(**params)
+            # Submit order using the appropriate method
+            response = await submit_method(order)
             
             # Parse response and generate events
             if response:
@@ -349,6 +359,166 @@ class BackpackExecutionClient(LiveExecutionClient):
                 ts_init=self._clock.timestamp_ns(),
             )
             await self._submit_order(submit_command)
+
+    def _apply_take_profit_stop_loss(self, order: Order, params: BackpackAdvancedOrderParams) -> None:
+        """
+        Apply take profit and stop loss parameters from order tags.
+        
+        Parameters
+        ----------
+        order : Order
+            The order to extract tags from.
+        params : BackpackAdvancedOrderParams
+            The parameters to update with TP/SL values.
+        
+        """
+        if order.tags is None:
+            return
+            
+        # Parse tags for take profit and stop loss
+        # Expected format: "tp:150.5" or "sl:140.0" or "tp:150.5,sl:140.0"
+        for tag in order.tags.split(","):
+            tag = tag.strip()
+            if tag.startswith("tp:"):
+                # Take profit
+                tp_price = tag[3:]
+                params.take_profit_trigger_price = tp_price
+                params.take_profit_trigger_by = "LastPrice"
+            elif tag.startswith("sl:"):
+                # Stop loss
+                sl_price = tag[3:]
+                params.stop_loss_trigger_price = sl_price
+                params.stop_loss_trigger_by = "LastPrice"
+            elif tag.startswith("tp_limit:"):
+                # Take profit limit price
+                params.take_profit_limit_price = tag[9:]
+            elif tag.startswith("sl_limit:"):
+                # Stop loss limit price
+                params.stop_loss_limit_price = tag[9:]
+            elif tag.startswith("tp_by:"):
+                # Take profit trigger by
+                params.take_profit_trigger_by = tag[6:]
+            elif tag.startswith("sl_by:"):
+                # Stop loss trigger by
+                params.stop_loss_trigger_by = tag[6:]
+
+    async def _submit_market_order(self, order: MarketOrder) -> dict | None:
+        """Submit a market order to the exchange."""
+        advanced_params = BackpackAdvancedOrderParams(
+            symbol=order.instrument_id.symbol.value,
+            side=backpack_order_side_from_nautilus(order.side),
+            order_type="Market",
+            quantity=str(order.quantity),
+            client_order_id=str(order.client_order_id),
+        )
+        
+        # Check for take profit/stop loss tags
+        self._apply_take_profit_stop_loss(order, advanced_params)
+        
+        params = advanced_params.to_request_params()
+        return await self._http_client.create_order(**params)
+
+    async def _submit_limit_order(self, order: LimitOrder) -> dict | None:
+        """Submit a limit order to the exchange."""
+        advanced_params = BackpackAdvancedOrderParams(
+            symbol=order.instrument_id.symbol.value,
+            side=backpack_order_side_from_nautilus(order.side),
+            order_type="Limit",
+            quantity=str(order.quantity),
+            price=str(order.price),
+            time_in_force=backpack_time_in_force_from_nautilus(order.time_in_force),
+            client_order_id=str(order.client_order_id),
+        )
+        
+        # Handle post-only orders
+        if order.is_post_only:
+            advanced_params.post_only = True
+            
+        # Handle iceberg orders
+        if order.display_qty is not None:
+            advanced_params.iceberg_qty = str(order.display_qty)
+            
+        # Check for take profit/stop loss tags
+        self._apply_take_profit_stop_loss(order, advanced_params)
+        
+        params = advanced_params.to_request_params()
+        return await self._http_client.create_order(**params)
+
+    async def _submit_stop_market_order(self, order: StopMarketOrder) -> dict | None:
+        """Submit a stop market order to the exchange."""
+        advanced_params = BackpackAdvancedOrderParams(
+            symbol=order.instrument_id.symbol.value,
+            side=backpack_order_side_from_nautilus(order.side),
+            order_type="Stop",
+            quantity=str(order.quantity),
+            trigger_price=str(order.trigger_price),
+            trigger_by=backpack_trigger_type_from_nautilus(order.trigger_type),
+            client_order_id=str(order.client_order_id),
+        )
+        
+        # Handle reduce-only orders
+        if order.is_reduce_only:
+            advanced_params.reduce_only = True
+        
+        params = advanced_params.to_request_params()
+        return await self._http_client.create_order(**params)
+
+    async def _submit_stop_limit_order(self, order: StopLimitOrder) -> dict | None:
+        """Submit a stop limit order to the exchange."""
+        advanced_params = BackpackAdvancedOrderParams(
+            symbol=order.instrument_id.symbol.value,
+            side=backpack_order_side_from_nautilus(order.side),
+            order_type="StopLimit",
+            quantity=str(order.quantity),
+            price=str(order.price),
+            trigger_price=str(order.trigger_price),
+            trigger_by=backpack_trigger_type_from_nautilus(order.trigger_type),
+            time_in_force=backpack_time_in_force_from_nautilus(order.time_in_force),
+            client_order_id=str(order.client_order_id),
+        )
+        
+        # Handle reduce-only orders
+        if order.is_reduce_only:
+            advanced_params.reduce_only = True
+            
+        # Handle post-only orders
+        if order.is_post_only:
+            advanced_params.post_only = True
+            
+        # Handle iceberg orders
+        if order.display_qty is not None:
+            advanced_params.iceberg_qty = str(order.display_qty)
+        
+        params = advanced_params.to_request_params()
+        return await self._http_client.create_order(**params)
+
+    async def _submit_trailing_stop_market_order(self, order: TrailingStopMarketOrder) -> dict | None:
+        """Submit a trailing stop market order to the exchange."""
+        # Check if Backpack supports trailing stops natively
+        # For now, we'll implement client-side trailing logic
+        self._log.warning(
+            f"Trailing stop orders not yet fully implemented for Backpack. "
+            f"Order {order.client_order_id} will be submitted as a regular stop order.",
+        )
+        
+        # Convert to a regular stop market order for now
+        # In a full implementation, we would track price and adjust the stop
+        advanced_params = BackpackAdvancedOrderParams(
+            symbol=order.instrument_id.symbol.value,
+            side=backpack_order_side_from_nautilus(order.side),
+            order_type="Stop",
+            quantity=str(order.quantity),
+            trigger_price=str(order.trigger_price) if order.trigger_price else None,
+            trigger_by=backpack_trigger_type_from_nautilus(order.trigger_type),
+            client_order_id=str(order.client_order_id),
+        )
+        
+        # Handle reduce-only orders
+        if order.is_reduce_only:
+            advanced_params.reduce_only = True
+        
+        params = advanced_params.to_request_params()
+        return await self._http_client.create_order(**params)
 
     async def _modify_order(self, command: ModifyOrder) -> None:
         """Modify an existing order."""

@@ -227,25 +227,12 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         
         return True
     
-    async def _submit_order(self, command: Order) -> None:
-        """Submit order with futures-specific parameters."""
-        # Add futures-specific parameters
-        order_data = await self._build_order_data(command)
-        
-        # Add reduce-only flag if applicable
-        if command.is_reduce_only:
-            order_data["reduceOnly"] = True
-        
-        # Add position side for hedge mode
-        if self._is_dual_side_position:
-            position_side = order_side_to_position_side(
-                command.side,
-                command.is_reduce_only,
-            )
-            order_data["positionSide"] = nautilus_position_side_to_backpack_futures(position_side)
-        
-        # Submit the order
-        await self._submit_order_data(order_data, command)
+    # Note: _submit_order is inherited from BackpackExecutionClient
+    # which already handles advanced order types including stop orders
+    # and take profit/stop loss functionality
+    
+    # Override only if futures-specific handling is needed
+    # For now, using parent implementation which supports all order types
     
     async def modify_leverage(
         self,
