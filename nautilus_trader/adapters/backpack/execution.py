@@ -27,6 +27,7 @@ from nautilus_trader.adapters.backpack.common.enums import (
     backpack_order_type_from_nautilus,
     backpack_time_in_force_from_nautilus,
 )
+from nautilus_trader.adapters.backpack.common.system_orders import BackpackSystemOrderHandler
 from nautilus_trader.adapters.backpack.config import BackpackExecClientConfig
 from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
@@ -139,6 +140,9 @@ class BackpackExecutionClient(LiveExecutionClient):
         # Unified account manager (will be shared with futures client)
         self._account_manager: BackpackUnifiedAccountManager | None = None
         
+        # System order handler for liquidations, ADL, etc.
+        self._system_order_handler: BackpackSystemOrderHandler | None = None
+        
         # Order submission method mapping
         self._submit_order_methods = {
             OrderType.MARKET: self._submit_market_order,
@@ -181,6 +185,13 @@ class BackpackExecutionClient(LiveExecutionClient):
         # Update account state
         await self._update_account_state()
         
+        # Initialize system order handler
+        self._system_order_handler = BackpackSystemOrderHandler(
+            msgbus=self._msgbus,
+            account_id=self._account_id,
+            logger=self._log,
+        )
+        
         # Connect WebSocket for order updates
         self._ws_client = BackpackWebSocketClient(
             api_key=self._http_client._api_key,
@@ -195,7 +206,7 @@ class BackpackExecutionClient(LiveExecutionClient):
         # Subscribe to order updates
         await self._ws_client.subscribe_order_update()
         
-        self._log.info("Connected to Backpack execution with WebSocket")
+        self._log.info("Connected to Backpack execution with WebSocket and system order handler")
 
     async def _disconnect(self) -> None:
         """Disconnect the execution client."""
@@ -634,8 +645,23 @@ class BackpackExecutionClient(LiveExecutionClient):
     def _handle_order_update(self, data: dict) -> None:
         """Handle order update from WebSocket."""
         try:
+            # Check if this is a system order
+            order_data = data.get("data", {})
+            if self._system_order_handler:
+                system_order = self._system_order_handler.identify_system_order(order_data)
+                if system_order:
+                    self._log.warning(
+                        f"System order detected: type={system_order.order_type} "
+                        f"reason={system_order.reason} id={system_order.order_id}",
+                    )
+                    # Publish system order event to message bus
+                    self._msgbus.publish(
+                        topic="backpack.system_order",
+                        msg={"system_order": system_order, "raw_data": order_data},
+                    )
+            
             # Parse order update based on event type
-            event_type = data.get("data", {}).get("e", "")
+            event_type = order_data.get("e", "")
             
             if event_type == "orderAccepted":
                 self._handle_order_accepted(data)
