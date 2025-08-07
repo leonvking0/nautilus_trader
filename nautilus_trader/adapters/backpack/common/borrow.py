@@ -18,8 +18,12 @@ Backpack Exchange auto-borrow functionality for unified account.
 
 from decimal import Decimal
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from nautilus_trader.common.component import Logger
+
+if TYPE_CHECKING:
+    from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 
 
 class BorrowType(Enum):
@@ -39,24 +43,43 @@ class BackpackAutoBorrow:
     
     Parameters
     ----------
+    account_http : BackpackAccountHttpAPI, optional
+        The account HTTP API for executing operations.
     logger : Logger
         The logger for the auto-borrow manager.
     max_borrow_rate : Decimal, optional
         Maximum acceptable borrow rate (APR as decimal).
     auto_borrow_threshold : Decimal, optional
         Minimum USDC shortage to trigger auto-borrow.
+    auto_repay_enabled : bool, optional
+        Whether auto-repay is enabled.
     """
     
     def __init__(
         self,
-        logger: Logger,
+        account_http: "BackpackAccountHttpAPI | None" = None,
+        logger: Logger | None = None,
         max_borrow_rate: Decimal = Decimal("0.50"),  # 50% APR max
         auto_borrow_threshold: Decimal = Decimal("1.0"),  # Min $1 shortage
+        auto_repay_enabled: bool = True,
     ) -> None:
-        self._log = logger
+        self._account_http = account_http
+        self._log = logger or Logger(name=self.__class__.__name__)
         self._max_borrow_rate = max_borrow_rate
         self._auto_borrow_threshold = auto_borrow_threshold
+        self._auto_repay_enabled = auto_repay_enabled
         self._active_borrows: dict[str, Decimal] = {}  # asset -> amount
+        
+        # Market condition tracking
+        self._market_rates: dict[str, Decimal] = {}  # asset -> current market rate
+        self._rate_history: dict[str, list[Decimal]] = {}  # asset -> rate history
+        self._volatility_score: Decimal = Decimal(0)  # Market volatility indicator
+        
+        # Auto-repay configuration
+        self._repay_priority: list[str] = []  # Assets to repay first
+        self._min_balance_after_repay = Decimal("100")  # Keep $100 minimum
+        self._repay_threshold_rate = Decimal("0.10")  # Repay if rate > 10% APR
+        self._scheduled_repayments: dict[str, int] = {}  # asset -> timestamp
     
     def check_borrow_needed(
         self,
@@ -303,3 +326,254 @@ class BackpackAutoBorrow:
         if asset in self._active_borrows:
             amount = self._active_borrows.pop(asset)
             self._log.info(f"Cleared {asset} borrow of {amount}")
+    
+    # Enhanced Auto-Repay Methods with Market Conditions
+    
+    def update_market_rate(self, asset: str, rate: Decimal) -> None:
+        """
+        Update market borrow rate for an asset.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset symbol.
+        rate : Decimal
+            The current borrow rate (APR).
+        """
+        self._market_rates[asset] = rate
+        
+        # Track rate history
+        if asset not in self._rate_history:
+            self._rate_history[asset] = []
+        self._rate_history[asset].append(rate)
+        
+        # Keep only last 24 data points
+        if len(self._rate_history[asset]) > 24:
+            self._rate_history[asset].pop(0)
+        
+        # Calculate volatility
+        if len(self._rate_history[asset]) >= 3:
+            rates = self._rate_history[asset]
+            avg_rate = sum(rates) / len(rates)
+            variance = sum((r - avg_rate) ** 2 for r in rates) / len(rates)
+            self._volatility_score = variance.sqrt()
+    
+    def should_auto_repay_advanced(
+        self,
+        asset: str,
+        available_balance: Decimal,
+        borrowed_amount: Decimal,
+        current_rate: Decimal | None = None,
+    ) -> tuple[bool, Decimal, str]:
+        """
+        Advanced auto-repay decision with market conditions.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset to repay.
+        available_balance : Decimal
+            The available balance.
+        borrowed_amount : Decimal
+            The borrowed amount.
+        current_rate : Decimal, optional
+            The current borrow rate.
+            
+        Returns
+        -------
+        tuple[bool, Decimal, str]
+            (should_repay, repay_amount, reason)
+        """
+        if not self._auto_repay_enabled or borrowed_amount <= 0:
+            return False, Decimal(0), "Auto-repay disabled or no borrow"
+        
+        # Use provided rate or fetch from market rates
+        rate = current_rate or self._market_rates.get(asset, Decimal(0))
+        
+        reasons = []
+        score = Decimal(0)
+        
+        # Factor 1: High interest rate
+        if rate > self._repay_threshold_rate:
+            score += Decimal("0.4")
+            reasons.append(f"High rate: {rate:.2%}")
+        
+        # Factor 2: Rising rate trend
+        if asset in self._rate_history and len(self._rate_history[asset]) >= 3:
+            recent_rates = self._rate_history[asset][-3:]
+            if all(recent_rates[i] <= recent_rates[i+1] for i in range(len(recent_rates)-1)):
+                score += Decimal("0.2")
+                reasons.append("Rising rate trend")
+        
+        # Factor 3: Excess balance available
+        excess = available_balance - self._min_balance_after_repay
+        if excess > borrowed_amount:
+            score += Decimal("0.3")
+            reasons.append(f"Excess balance: ${excess}")
+        
+        # Factor 4: High volatility (repay to reduce risk)
+        if self._volatility_score > Decimal("0.05"):
+            score += Decimal("0.1")
+            reasons.append("High rate volatility")
+        
+        # Decision threshold
+        if score >= Decimal("0.5"):
+            # Calculate optimal repay amount
+            max_repay = min(
+                excess if excess > 0 else Decimal(0),
+                borrowed_amount
+            )
+            
+            # Partial repay if rate is moderate
+            if rate < Decimal("0.20"):  # < 20% APR
+                repay_amount = max_repay * Decimal("0.5")  # Repay 50%
+            else:
+                repay_amount = max_repay  # Full repay
+            
+            reason = f"Auto-repay triggered: {', '.join(reasons)} (score: {score})"
+            return True, repay_amount, reason
+        
+        return False, Decimal(0), f"Score {score} below threshold"
+    
+    async def execute_auto_repay(
+        self,
+        asset: str,
+        amount: Decimal,
+        reason: str,
+    ) -> bool:
+        """
+        Execute auto-repay operation.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset to repay.
+        amount : Decimal
+            The amount to repay.
+        reason : str
+            The reason for repayment.
+            
+        Returns
+        -------
+        bool
+            True if repayment successful.
+        """
+        if not self._account_http:
+            self._log.warning("No account HTTP client available for auto-repay")
+            return False
+        
+        try:
+            self._log.info(f"Executing auto-repay: {amount} {asset} - {reason}")
+            
+            # Execute repay via API
+            result = await self._account_http.execute_repay(
+                asset=asset,
+                amount=str(amount),
+            )
+            
+            # Update tracking
+            if result:
+                current = self._active_borrows.get(asset, Decimal(0))
+                new_amount = max(Decimal(0), current - amount)
+                if new_amount > 0:
+                    self._active_borrows[asset] = new_amount
+                else:
+                    self._active_borrows.pop(asset, None)
+                
+                self._log.info(
+                    f"Auto-repay successful: {amount} {asset} "
+                    f"(remaining: {new_amount})"
+                )
+                return True
+            
+        except Exception as e:
+            self._log.error(f"Auto-repay failed: {e}")
+        
+        return False
+    
+    def set_repay_priority(self, assets: list[str]) -> None:
+        """
+        Set priority order for auto-repayment.
+        
+        Parameters
+        ----------
+        assets : list[str]
+            Ordered list of assets (highest priority first).
+        """
+        self._repay_priority = assets
+        self._log.info(f"Repay priority set: {assets}")
+    
+    def get_repayment_plan(
+        self,
+        available_balances: dict[str, Decimal],
+    ) -> list[tuple[str, Decimal, str]]:
+        """
+        Get optimized repayment plan based on current conditions.
+        
+        Parameters
+        ----------
+        available_balances : dict[str, Decimal]
+            Available balances by asset.
+            
+        Returns
+        -------
+        list[tuple[str, Decimal, str]]
+            List of (asset, amount, reason) to repay.
+        """
+        plan = []
+        
+        # Sort borrows by priority and rate
+        sorted_borrows = sorted(
+            self._active_borrows.items(),
+            key=lambda x: (
+                self._repay_priority.index(x[0]) if x[0] in self._repay_priority else 999,
+                -self._market_rates.get(x[0], Decimal(0)),  # Higher rate first
+            ),
+        )
+        
+        for asset, borrowed in sorted_borrows:
+            available = available_balances.get(asset, Decimal(0))
+            
+            should_repay, amount, reason = self.should_auto_repay_advanced(
+                asset=asset,
+                available_balance=available,
+                borrowed_amount=borrowed,
+            )
+            
+            if should_repay and amount > 0:
+                plan.append((asset, amount, reason))
+        
+        return plan
+    
+    def estimate_interest_savings(
+        self,
+        asset: str,
+        repay_amount: Decimal,
+        days: int = 30,
+    ) -> Decimal:
+        """
+        Estimate interest savings from repayment.
+        
+        Parameters
+        ----------
+        asset : str
+            The asset to repay.
+        repay_amount : Decimal
+            The repayment amount.
+        days : int, default 30
+            Number of days to calculate savings.
+            
+        Returns
+        -------
+        Decimal
+            Estimated interest savings.
+        """
+        rate = self._market_rates.get(asset, Decimal(0))
+        if rate == 0:
+            return Decimal(0)
+        
+        # Calculate interest that would accrue
+        hours = days * 24
+        interest = self.calculate_interest(repay_amount, rate, hours)
+        
+        return interest

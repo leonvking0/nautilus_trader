@@ -26,6 +26,8 @@ from nautilus_trader.adapters.backpack.schemas.account import BackpackCapital
 from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateral
 from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateralDetail
 from nautilus_trader.adapters.backpack.schemas.account import BackpackSubaccount
+from nautilus_trader.adapters.backpack.schemas.margin import BackpackBorrowHistory
+from nautilus_trader.adapters.backpack.schemas.margin import BackpackInterestHistory
 
 
 class BackpackAccountHttpAPI:
@@ -49,6 +51,8 @@ class BackpackAccountHttpAPI:
         self._decoder_borrow_positions = msgspec.json.Decoder(list[BackpackBorrowPosition])
         self._decoder_account_limits = msgspec.json.Decoder(BackpackAccountLimits)
         self._decoder_subaccounts = msgspec.json.Decoder(list[BackpackSubaccount])
+        self._decoder_borrow_history = msgspec.json.Decoder(list[BackpackBorrowHistory])
+        self._decoder_interest_history = msgspec.json.Decoder(list[BackpackInterestHistory])
     
     async def fetch_account(self) -> BackpackAccount:
         """
@@ -305,6 +309,128 @@ class BackpackAccountHttpAPI:
         )
         return msgspec.json.decode(raw)
     
+    async def fetch_borrow_history(
+        self,
+        asset: str | None = None,
+        start_time: int | None = None,
+        end_time: int | None = None,
+        limit: int = 100,
+    ) -> list[BackpackBorrowHistory]:
+        """
+        Fetch borrow/repay history.
+        
+        GET /wapi/v1/history/borrowLend
+        
+        Parameters
+        ----------
+        asset : str, optional
+            Filter by asset.
+        start_time : int, optional
+            Start timestamp in milliseconds.
+        end_time : int, optional
+            End timestamp in milliseconds.
+        limit : int, default 100
+            Maximum number of records.
+            
+        Returns
+        -------
+        list[BackpackBorrowHistory]
+            The borrow/repay history records.
+        """
+        params = {"limit": str(limit)}
+        if asset:
+            params["asset"] = asset
+        if start_time:
+            params["from"] = str(start_time)
+        if end_time:
+            params["to"] = str(end_time)
+        
+        raw = await self._client._get(
+            path="/wapi/v1/history/borrowLend",
+            params=params,
+            auth=True,
+            instruction="borrowHistoryQueryAll",
+        )
+        return self._decoder_borrow_history.decode(raw)
+    
+    async def fetch_interest_history(
+        self,
+        asset: str | None = None,
+        start_time: int | None = None,
+        end_time: int | None = None,
+        limit: int = 100,
+    ) -> list[BackpackInterestHistory]:
+        """
+        Fetch interest payment history.
+        
+        GET /wapi/v1/history/interest
+        
+        Parameters
+        ----------
+        asset : str, optional
+            Filter by asset.
+        start_time : int, optional
+            Start timestamp in milliseconds.
+        end_time : int, optional
+            End timestamp in milliseconds.
+        limit : int, default 100
+            Maximum number of records.
+            
+        Returns
+        -------
+        list[BackpackInterestHistory]
+            The interest payment history.
+        """
+        params = {"limit": str(limit)}
+        if asset:
+            params["asset"] = asset
+        if start_time:
+            params["from"] = str(start_time)
+        if end_time:
+            params["to"] = str(end_time)
+        
+        raw = await self._client._get(
+            path="/wapi/v1/history/interest",
+            params=params,
+            auth=True,
+            instruction="interestHistoryQueryAll",
+        )
+        return self._decoder_interest_history.decode(raw)
+    
+    async def fetch_borrow_position_history(
+        self,
+        position_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict]:
+        """
+        Fetch borrow position history per position.
+        
+        GET /wapi/v1/history/borrowLend/positions
+        
+        Parameters
+        ----------
+        position_id : str, optional
+            Filter by position ID.
+        limit : int, default 100
+            Maximum number of records.
+            
+        Returns
+        -------
+        list[dict]
+            The borrow position history.
+        """
+        params = {"limit": str(limit)}
+        if position_id:
+            params["positionId"] = position_id
+        
+        raw = await self._client._get(
+            path="/wapi/v1/history/borrowLend/positions",
+            params=params,
+            auth=True,
+            instruction="borrowPositionHistoryQueryAll",
+        )
+        return msgspec.json.decode(raw)
+    
     async def fetch_subaccounts(self) -> list[BackpackSubaccount]:
         """
         Fetch all subaccounts.
@@ -383,5 +509,122 @@ class BackpackAccountHttpAPI:
             data=data,
             auth=True,
             instruction="accountExecute",
+        )
+        return msgspec.json.decode(raw)
+    
+    async def execute_collateral_conversion(
+        self,
+        from_asset: str,
+        to_asset: str,
+        amount: str,
+    ) -> dict:
+        """
+        Execute collateral conversion to manage risk.
+        
+        POST /api/v1/collateral/convert
+        
+        Parameters
+        ----------
+        from_asset : str
+            The asset to convert from.
+        to_asset : str
+            The asset to convert to.
+        amount : str
+            The amount to convert.
+            
+        Returns
+        -------
+        dict
+            The conversion result.
+        """
+        data = {
+            "fromAsset": from_asset,
+            "toAsset": to_asset,
+            "amount": amount,
+        }
+        
+        raw = await self._client._post(
+            path="/api/v1/collateral/convert",
+            data=data,
+            auth=True,
+            instruction="collateralConvert",
+        )
+        return msgspec.json.decode(raw)
+    
+    async def get_conversion_quote(
+        self,
+        from_asset: str,
+        to_asset: str,
+        amount: str,
+    ) -> dict:
+        """
+        Get a quote for collateral conversion.
+        
+        GET /api/v1/collateral/quote
+        
+        Parameters
+        ----------
+        from_asset : str
+            The asset to convert from.
+        to_asset : str
+            The asset to convert to.
+        amount : str
+            The amount to convert.
+            
+        Returns
+        -------
+        dict
+            The conversion quote.
+        """
+        params = {
+            "fromAsset": from_asset,
+            "toAsset": to_asset,
+            "amount": amount,
+        }
+        
+        raw = await self._client._get(
+            path="/api/v1/collateral/quote",
+            params=params,
+            auth=True,
+            instruction="collateralQuery",
+        )
+        return msgspec.json.decode(raw)
+    
+    async def fetch_conversion_history(
+        self,
+        start_time: int | None = None,
+        end_time: int | None = None,
+        limit: int = 100,
+    ) -> list[dict]:
+        """
+        Fetch collateral conversion history.
+        
+        GET /wapi/v1/history/collateral/conversions
+        
+        Parameters
+        ----------
+        start_time : int, optional
+            Start timestamp in milliseconds.
+        end_time : int, optional
+            End timestamp in milliseconds.
+        limit : int, default 100
+            Maximum number of records.
+            
+        Returns
+        -------
+        list[dict]
+            The conversion history.
+        """
+        params = {"limit": str(limit)}
+        if start_time:
+            params["from"] = str(start_time)
+        if end_time:
+            params["to"] = str(end_time)
+        
+        raw = await self._client._get(
+            path="/wapi/v1/history/collateral/conversions",
+            params=params,
+            auth=True,
+            instruction="collateralHistoryQuery",
         )
         return msgspec.json.decode(raw)

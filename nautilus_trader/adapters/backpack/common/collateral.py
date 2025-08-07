@@ -17,11 +17,15 @@ Backpack Exchange collateral calculator for unified cross-margin account.
 """
 
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from nautilus_trader.adapters.backpack.schemas.account import BackpackBalance
 from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateralWeight
 from nautilus_trader.common.component import Logger
 from nautilus_trader.model.objects import Price
+
+if TYPE_CHECKING:
+    from nautilus_trader.adapters.backpack.http.account import BackpackAccountHttpAPI
 
 
 class BackpackCollateralCalculator:
@@ -283,3 +287,196 @@ class BackpackCollateralCalculator:
             )
         
         return adjusted_weight
+    
+    # Collateral Conversion Methods
+    
+    async def calculate_conversion_impact(
+        self,
+        from_asset: str,
+        to_asset: str,
+        amount: Decimal,
+        current_balances: dict[str, Decimal],
+        prices: dict[str, Decimal],
+        weights: dict[str, Decimal],
+        conversion_rate: Decimal,
+    ) -> dict[str, Decimal]:
+        """
+        Calculate the impact of a collateral conversion.
+        
+        Parameters
+        ----------
+        from_asset : str
+            The asset to convert from.
+        to_asset : str
+            The asset to convert to.
+        amount : Decimal
+            The amount to convert.
+        current_balances : dict[str, Decimal]
+            Current balances by asset.
+        prices : dict[str, Decimal]
+            Asset prices in USD.
+        weights : dict[str, Decimal]
+            Collateral weights.
+        conversion_rate : Decimal
+            The conversion rate.
+            
+        Returns
+        -------
+        dict[str, Decimal]
+            Impact metrics (collateral_change, weight_change, etc.).
+        """
+        # Current collateral value
+        current_from_collateral = self.calculate_asset_collateral(
+            asset=from_asset,
+            quantity=current_balances.get(from_asset, Decimal(0)),
+            mark_price=prices.get(from_asset, Decimal(0)),
+            weight=weights.get(from_asset, Decimal(0)),
+        )
+        
+        # New balances after conversion
+        new_from_balance = current_balances.get(from_asset, Decimal(0)) - amount
+        new_to_balance = current_balances.get(to_asset, Decimal(0)) + (amount * conversion_rate)
+        
+        # New collateral values
+        new_from_collateral = self.calculate_asset_collateral(
+            asset=from_asset,
+            quantity=new_from_balance,
+            mark_price=prices.get(from_asset, Decimal(0)),
+            weight=weights.get(from_asset, Decimal(0)),
+        )
+        
+        new_to_collateral = self.calculate_asset_collateral(
+            asset=to_asset,
+            quantity=new_to_balance,
+            mark_price=prices.get(to_asset, Decimal(0)),
+            weight=weights.get(to_asset, Decimal(0)),
+        )
+        
+        old_to_collateral = self.calculate_asset_collateral(
+            asset=to_asset,
+            quantity=current_balances.get(to_asset, Decimal(0)),
+            mark_price=prices.get(to_asset, Decimal(0)),
+            weight=weights.get(to_asset, Decimal(0)),
+        )
+        
+        # Calculate changes
+        collateral_change = (
+            (new_from_collateral + new_to_collateral)
+            - (current_from_collateral + old_to_collateral)
+        )
+        
+        # Weight-adjusted change
+        from_weight = weights.get(from_asset, Decimal(0))
+        to_weight = weights.get(to_asset, Decimal(0))
+        weight_change = to_weight - from_weight
+        
+        return {
+            "collateral_change": collateral_change,
+            "weight_change": weight_change,
+            "new_from_balance": new_from_balance,
+            "new_to_balance": new_to_balance,
+            "from_collateral_lost": current_from_collateral - new_from_collateral,
+            "to_collateral_gained": new_to_collateral - old_to_collateral,
+        }
+    
+    def recommend_conversion(
+        self,
+        balances: dict[str, Decimal],
+        prices: dict[str, Decimal],
+        weights: dict[str, Decimal],
+        target_ratio: Decimal = Decimal("0.5"),  # Target margin ratio
+    ) -> list[tuple[str, str, Decimal]]:
+        """
+        Recommend collateral conversions to optimize risk.
+        
+        Parameters
+        ----------
+        balances : dict[str, Decimal]
+            Current balances by asset.
+        prices : dict[str, Decimal]
+            Asset prices in USD.
+        weights : dict[str, Decimal]
+            Collateral weights.
+        target_ratio : Decimal, default 0.5
+            Target margin ratio.
+            
+        Returns
+        -------
+        list[tuple[str, str, Decimal]]
+            List of (from_asset, to_asset, amount) recommendations.
+        """
+        recommendations = []
+        
+        # Identify low-weight assets
+        low_weight_assets = [
+            asset for asset, weight in weights.items()
+            if weight < Decimal("0.8") and balances.get(asset, Decimal(0)) > 0
+        ]
+        
+        # Identify high-weight assets
+        high_weight_assets = [
+            asset for asset, weight in weights.items()
+            if weight >= Decimal("0.95")
+        ]
+        
+        # Recommend conversions from low to high weight
+        for from_asset in low_weight_assets:
+            from_balance = balances.get(from_asset, Decimal(0))
+            from_value = from_balance * prices.get(from_asset, Decimal(0))
+            
+            # Only convert if value is significant
+            if from_value > Decimal("100"):  # > $100
+                # Find best target asset
+                for to_asset in high_weight_assets:
+                    # Recommend partial conversion
+                    convert_amount = from_balance * Decimal("0.5")  # Convert 50%
+                    
+                    recommendations.append((
+                        from_asset,
+                        to_asset,
+                        convert_amount,
+                    ))
+                    
+                    self._log.info(
+                        f"Recommend converting {convert_amount} {from_asset} "
+                        f"to {to_asset} (weight: {weights[from_asset]} -> {weights[to_asset]})"
+                    )
+                    break  # One conversion per asset
+        
+        return recommendations
+    
+    def should_convert_for_liquidation_prevention(
+        self,
+        margin_ratio: Decimal,
+        balances: dict[str, Decimal],
+        weights: dict[str, Decimal],
+    ) -> bool:
+        """
+        Check if conversion needed to prevent liquidation.
+        
+        Parameters
+        ----------
+        margin_ratio : Decimal
+            Current margin ratio.
+        balances : dict[str, Decimal]
+            Current balances.
+        weights : dict[str, Decimal]
+            Collateral weights.
+            
+        Returns
+        -------
+        bool
+            True if conversion recommended.
+        """
+        # Critical margin level
+        if margin_ratio > Decimal("0.90"):  # > 90% margin used
+            # Check if we have low-weight assets
+            for asset, balance in balances.items():
+                if balance > 0 and weights.get(asset, Decimal(0)) < Decimal("0.8"):
+                    self._log.warning(
+                        f"Critical margin {margin_ratio:.2%}: "
+                        f"Consider converting {asset} (weight: {weights.get(asset, 0)})"
+                    )
+                    return True
+        
+        return False
