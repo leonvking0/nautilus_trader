@@ -178,6 +178,19 @@ class BackpackFuturesPosition:
 - [x] Market depth analysis (via order book)
 - [ ] Volume profile tracking (deferred to Part D)
 
+### ⚠️ CRITICAL ARCHITECTURAL DISCOVERY (2025-08-07)
+
+#### Backpack's Unified Account Model
+After reviewing Backpack's documentation, we discovered that Backpack uses a **unified multi-currency cross-margin account model**, which is fundamentally different from Binance's separated account architecture:
+
+1. **Single Account for All Trading**: Spot, margin, and futures share the same account and collateral pool
+2. **Cross-Collateral by Default**: All assets contribute to margin with weighted values
+3. **Auto-Borrow Functionality**: Automatic USDC borrows instead of liquidating collateral
+4. **Subaccount Isolation**: Up to 10 subaccounts for risk isolation
+5. **Multi-Currency Collateral**: BTC, SOL, USDC, etc. all serve as collateral with haircuts
+
+**Impact**: This requires significant refactoring of our account management approach. The current implementation incorrectly assumes separate accounts for spot and futures.
+
 ### Part A Completion Summary (2025-08-07)
 
 #### ✅ Completed Components:
@@ -204,31 +217,70 @@ class BackpackFuturesPosition:
 
 ---
 
+## Part A.2: Unified Account Refactoring (CRITICAL - Immediate Priority)
+
+### A.2.1 Account Architecture Refactoring
+**Priority**: CRITICAL  
+**Duration**: 2 days  
+**Status**: IN PROGRESS
+
+#### Required Changes
+```
+nautilus_trader/adapters/backpack/
+├── common/
+│   ├── account.py          # Unified account management (NEW)
+│   ├── collateral.py       # Cross-collateral calculator (NEW)
+│   └── borrow.py          # Auto-borrow functionality (NEW)
+├── http/
+│   └── account.py         # Complete account endpoints (UPDATE)
+└── schemas/
+    └── account.py         # Unified account schemas (UPDATE)
+```
+
+#### Implementation Tasks
+- [ ] Create BackpackUnifiedAccount schema with multi-currency support
+- [ ] Implement BackpackCollateralCalculator for weighted collateral
+- [ ] Add auto-borrow detection and execution
+- [ ] Refactor execution clients to use unified account
+- [ ] Add subaccount support (max 10)
+- [ ] Implement cross-margin calculations
+
+#### Key Features to Implement
+1. **Unified Account State**:
+   - Single account for spot, margin, and futures
+   - Shared collateral pool with asset weights
+   - Cross-position margin calculations
+   
+2. **Collateral Management**:
+   - Multi-currency collateral with haircuts
+   - Dynamic weight adjustments based on size
+   - Real-time collateral value calculations
+   
+3. **Auto-Borrow System**:
+   - Automatic USDC borrows when insufficient
+   - Prevents unnecessary liquidations
+   - Tracks borrow liability
+   
+4. **Risk Management**:
+   - Initial Margin Rate (IMR)
+   - Maintenance Margin Rate (MMR)
+   - Cross-liquidation triggers
+
+---
+
 ## Part B: Margin Trading & Lending (Week 3)
 
-### B.1 Margin Account Support
+### B.1 Margin Operations (Updated for Unified Model)
 **Priority**: HIGH  
 **Duration**: 2 days
 
-#### Directory Structure
-```
-nautilus_trader/adapters/backpack/margin/
-├── __init__.py
-├── account.py             # Margin account management
-├── borrow_lend.py         # Borrow/lend operations
-├── collateral.py          # Collateral management
-└── schemas/
-    ├── borrow.py          # Borrow/lend schemas
-    └── collateral.py      # Collateral schemas
-```
-
 #### Features
-- [ ] Margin account type support
-- [ ] Cross-margin implementation
-- [ ] Isolated margin support
-- [ ] Margin level calculations
-- [ ] Auto-borrow functionality
-- [ ] Margin call handling
+- [ ] Borrow/lend position management
+- [ ] Interest rate calculations
+- [ ] Auto-borrow triggers
+- [ ] Cross-margin liquidations
+- [ ] Collateral conversions
+- [ ] Margin call notifications
 
 ### B.2 Borrow/Lend Implementation
 **Priority**: HIGH  
@@ -618,7 +670,7 @@ class BackpackBarDataLoader:
 
 ## Progress Log
 
-### 2025-08-07: Part A Complete
+### 2025-08-07: Part A Complete + Critical Discovery
 - ✅ Created futures directory structure and infrastructure
 - ✅ Implemented BackpackFuturesDataClient with streaming support
 - ✅ Implemented BackpackFuturesExecutionClient with position management
@@ -626,7 +678,9 @@ class BackpackBarDataLoader:
 - ✅ Created futures instrument provider for perpetual contracts
 - ✅ Integrated leverage and margin controls
 - ✅ Added factory methods for futures clients
-- **Next**: Begin Part B - Margin Trading & Lending
+- ⚠️ **CRITICAL**: Discovered Backpack uses unified cross-margin account model
+- 🔧 **Starting Part A.2**: Refactoring account architecture for unified model
+- **Next**: Complete unified account refactoring, then Part B
 
 ---
 
