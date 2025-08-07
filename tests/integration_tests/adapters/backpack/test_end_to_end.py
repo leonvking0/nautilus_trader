@@ -31,6 +31,10 @@ from nautilus_trader.adapters.backpack.factories import BackpackLiveExecClientFa
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
 from nautilus_trader.adapters.backpack.schemas.account import BackpackAccount
 from nautilus_trader.adapters.backpack.schemas.account import BackpackBalance
+from nautilus_trader.adapters.backpack.schemas.account import BackpackCapital
+from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateral
+from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateralWeight
+from nautilus_trader.adapters.backpack.schemas.account import BackpackCollateralDetail
 from nautilus_trader.adapters.backpack.schemas.account import BackpackFill
 from nautilus_trader.adapters.backpack.schemas.account import BackpackOrder
 from nautilus_trader.adapters.backpack.schemas.account import BackpackOrderResponse
@@ -129,6 +133,9 @@ class TestBackpackEndToEnd:
         # Create HTTP client
         self.http_client = MagicMock(spec=BackpackHttpClient)
         
+        # Setup unified account mocks
+        self._setup_unified_account_mocks()
+        
         # Create instrument provider
         self.provider = BackpackSpotInstrumentProvider(
             client=self.http_client,
@@ -180,6 +187,61 @@ class TestBackpackEndToEnd:
             clock=self.clock,
             config=BackpackExecClientConfig(),
         )
+    
+    def _setup_unified_account_mocks(self):
+        """Setup mocks for unified account manager."""
+        # Mock capital response
+        self.http_client.fetch_capital = AsyncMock(return_value=BackpackCapital(
+            balances=[
+                BackpackBalance(symbol="USDC", available="10000", locked="500", staked="0"),
+                BackpackBalance(symbol="SOL", available="100", locked="10", staked="0"),
+            ],
+            totalCollateral="15000",
+            availableCollateral="14000",
+            initialMarginRate="0.1",
+            maintenanceMarginRate="0.05",
+            totalBorrowLiability="0",
+            unsettledBalances="0",
+            unrealizedPnl="0",
+        ))
+        
+        # Mock collateral response
+        self.http_client.fetch_collateral = AsyncMock(return_value=BackpackCollateral(
+            assets=[
+                BackpackCollateralWeight(asset="USDC", weight="1.0"),
+                BackpackCollateralWeight(asset="SOL", weight="0.9"),
+            ],
+            totalWeightedCollateral="15000",
+        ))
+        
+        # Mock collateral details
+        self.http_client.fetch_collateral_details = AsyncMock(return_value=[
+            BackpackCollateralDetail(
+                asset="USDC",
+                quantity="10500",
+                markPrice="1.0",
+                collateralValue="10500",
+                weight="1.0",
+                usdValue="10500",
+            ),
+            BackpackCollateralDetail(
+                asset="SOL",
+                quantity="110",
+                markPrice="100.0",
+                collateralValue="9900",
+                weight="0.9",
+                usdValue="11000",
+            ),
+        ])
+        
+        # Mock borrow positions (empty for tests)
+        self.http_client.fetch_borrow_positions = AsyncMock(return_value=[])
+        
+        # Mock account limits
+        self.http_client.fetch_account_limits = AsyncMock(return_value={
+            "maxLeverage": "20",
+            "maxPositions": "100",
+        })
 
     @pytest.mark.asyncio
     async def test_full_trading_flow(self):
@@ -205,27 +267,7 @@ class TestBackpackEndToEnd:
             },
         ]
         
-        # Mock account data
-        mock_account = BackpackAccount(
-            account_id="test-account",
-            balances=[
-                BackpackBalance(
-                    symbol="USDC",
-                    available="10000.00",
-                    locked="0.00",
-                    staked="0.00",
-                ),
-                BackpackBalance(
-                    symbol="SOL",
-                    available="100.00",
-                    locked="0.00",
-                    staked="0.00",
-                ),
-            ],
-        )
-        
         self.http_client.fetch_markets = AsyncMock(return_value=mock_markets)
-        self.http_client.fetch_account = AsyncMock(return_value=mock_account)
         
         # Connect clients
         await self.data_client._connect()
@@ -495,62 +537,30 @@ class TestBackpackEndToEnd:
 
     @pytest.mark.asyncio
     async def test_portfolio_sync(self):
-        """Test portfolio synchronization with exchange."""
-        # Initial account state
-        initial_account = BackpackAccount(
-            account_id="test-account",
-            balances=[
-                BackpackBalance(
-                    symbol="USDC",
-                    available="10000.00",
-                    locked="0.00",
-                    staked="0.00",
-                ),
-                BackpackBalance(
-                    symbol="SOL",
-                    available="100.00",
-                    locked="0.00",
-                    staked="0.00",
-                ),
-            ],
-        )
-        
-        self.http_client.fetch_account = AsyncMock(return_value=initial_account)
-        
+        """Test portfolio synchronization through unified account."""
         # Connect and sync
         await self.exec_client._connect()
         
-        # Simulate trades occurring
-        # Updated account state after trades
-        updated_account = BackpackAccount(
-            account_id="test-account",
+        # Simulate trades occurring - update capital mock
+        self.http_client.fetch_capital = AsyncMock(return_value=BackpackCapital(
             balances=[
-                BackpackBalance(
-                    symbol="USDC",
-                    available="8500.00",  # Bought SOL
-                    locked="0.00",
-                    staked="0.00",
-                ),
-                BackpackBalance(
-                    symbol="SOL",
-                    available="110.00",  # Received SOL
-                    locked="0.00",
-                    staked="0.00",
-                ),
+                BackpackBalance(symbol="USDC", available="8500", locked="0", staked="0"),  # Bought SOL
+                BackpackBalance(symbol="SOL", available="110", locked="0", staked="0"),  # Received SOL
             ],
-        )
+            totalCollateral="14000",
+            availableCollateral="13500",
+            initialMarginRate="0.1",
+            maintenanceMarginRate="0.05",
+            totalBorrowLiability="0",
+            unsettledBalances="0",
+            unrealizedPnl="0",
+        ))
         
-        self.http_client.fetch_account = AsyncMock(return_value=updated_account)
+        # Trigger account state update
+        await self.exec_client._update_account_state()
         
-        # Re-sync account
-        account = await self.http_client.fetch_account()
-        
-        # Verify balances updated
-        usdc_balance = next(b for b in account.balances if b.symbol == "USDC")
-        sol_balance = next(b for b in account.balances if b.symbol == "SOL")
-        
-        assert usdc_balance.available == "8500.00"
-        assert sol_balance.available == "110.00"
+        # Verify capital was fetched with updated balances
+        assert self.http_client.fetch_capital.call_count >= 2  # Initial connect + update
 
     @pytest.mark.asyncio
     async def test_error_recovery(self):

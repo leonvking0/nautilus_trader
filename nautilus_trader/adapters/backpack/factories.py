@@ -426,7 +426,7 @@ class BackpackFuturesExecClientFactory(LiveExecClientFactory):
 
         return BackpackFuturesExecutionClient(
             loop=loop,
-            http_client=http_client,
+            client=http_client,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
@@ -503,7 +503,7 @@ def create_backpack_unified_execution_clients(
     # Create futures execution client
     futures_client = BackpackFuturesExecutionClient(
         loop=loop,
-        http_client=http_client,
+        client=http_client,
         msgbus=msgbus,
         cache=cache,
         clock=clock,

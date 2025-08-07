@@ -193,8 +193,8 @@ def account_state() -> AccountState:
     from nautilus_trader.core.uuid import UUID4
     
     return AccountState(
-        account_id=AccountId("BACKPACK-SPOT-001"),
-        account_type=AccountType.CASH,
+        account_id=AccountId("BACKPACK-UNIFIED-001"),
+        account_type=AccountType.MARGIN,
         base_currency=USDT,
         reported=True,
         balances=[

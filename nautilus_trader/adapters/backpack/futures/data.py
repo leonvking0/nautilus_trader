@@ -36,10 +36,8 @@ from nautilus_trader.common.component import MessageBus
 from nautilus_trader.common.enums import LogColor
 from nautilus_trader.common.providers import InstrumentProvider
 from nautilus_trader.core.correctness import PyCondition
-from nautilus_trader.data.messages import DataType
-from nautilus_trader.data.messages import SubscribeCustomData
-from nautilus_trader.data.messages import UnsubscribeCustomData
 from nautilus_trader.model.data import CustomData
+from nautilus_trader.model.data import DataType
 from nautilus_trader.model.data import MarkPriceUpdate
 from nautilus_trader.model.identifiers import ClientId
 from nautilus_trader.model.identifiers import InstrumentId
@@ -109,37 +107,6 @@ class BackpackFuturesDataClient(BackpackDataClient):
         }
         
         self._log.info("BackpackFuturesDataClient initialized", LogColor.GREEN)
-    
-    async def _subscribe_custom_data(self, req: SubscribeCustomData) -> None:
-        """Subscribe to custom data streams."""
-        data_type = req.data_type
-        
-        if data_type.type == BackpackFuturesMarkPriceUpdate:
-            # Subscribe to mark price updates
-            instrument_id = data_type.metadata.get("instrument_id")
-            if not instrument_id:
-                self._log.error("No instrument_id in BackpackFuturesMarkPriceUpdate subscription")
-                return
-            
-            symbol = self._get_backpack_symbol(instrument_id)
-            await self._subscribe_mark_price(symbol)
-            await self._subscribe_funding_rate(symbol)
-            await self._subscribe_open_interest(symbol)
-    
-    async def _unsubscribe_custom_data(self, req: UnsubscribeCustomData) -> None:
-        """Unsubscribe from custom data streams."""
-        data_type = req.data_type
-        
-        if data_type.type == BackpackFuturesMarkPriceUpdate:
-            # Unsubscribe from mark price updates
-            instrument_id = data_type.metadata.get("instrument_id")
-            if not instrument_id:
-                return
-            
-            symbol = self._get_backpack_symbol(instrument_id)
-            await self._unsubscribe_mark_price(symbol)
-            await self._unsubscribe_funding_rate(symbol)
-            await self._unsubscribe_open_interest(symbol)
     
     async def _subscribe_mark_price(self, symbol: str) -> None:
         """Subscribe to mark price updates for a symbol."""

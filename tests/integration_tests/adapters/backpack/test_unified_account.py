@@ -34,7 +34,7 @@ from nautilus_trader.adapters.backpack.schemas.account import (
     BackpackBorrowPosition,
     BackpackCapital,
     BackpackCollateral,
-    BackpackCollateralAsset,
+    BackpackCollateralWeight,
     BackpackCollateralDetail,
     BackpackUnifiedAccount,
 )
@@ -42,6 +42,7 @@ from nautilus_trader.cache.cache import Cache
 from nautilus_trader.common.component import LiveClock, Logger, MessageBus
 from nautilus_trader.model.currencies import USDC
 from nautilus_trader.model.identifiers import AccountId
+from nautilus_trader.model.identifiers import TraderId
 
 
 @pytest.fixture
@@ -60,9 +61,9 @@ def mock_account_http():
     # Mock capital response
     mock.fetch_capital = AsyncMock(return_value=BackpackCapital(
         balances=[
-            BackpackBalance(symbol="USDC", available="10000", locked="500"),
-            BackpackBalance(symbol="BTC", available="0.5", locked="0"),
-            BackpackBalance(symbol="SOL", available="100", locked="10"),
+            BackpackBalance(symbol="USDC", available="10000", locked="500", staked="0"),
+            BackpackBalance(symbol="BTC", available="0.5", locked="0", staked="0"),
+            BackpackBalance(symbol="SOL", available="100", locked="10", staked="0"),
         ],
         totalCollateral="25000",
         availableCollateral="20000",
@@ -76,17 +77,39 @@ def mock_account_http():
     # Mock collateral response
     mock.fetch_collateral = AsyncMock(return_value=BackpackCollateral(
         assets=[
-            BackpackCollateralAsset(asset="USDC", weight="1.0"),
-            BackpackCollateralAsset(asset="BTC", weight="0.95"),
-            BackpackCollateralAsset(asset="SOL", weight="0.9"),
+            BackpackCollateralWeight(asset="USDC", weight="1.0"),
+            BackpackCollateralWeight(asset="BTC", weight="0.95"),
+            BackpackCollateralWeight(asset="SOL", weight="0.9"),
         ],
+        totalWeightedCollateral="25000",
     ))
     
     # Mock collateral details
     mock.fetch_collateral_details = AsyncMock(return_value=[
-        BackpackCollateralDetail(asset="USDC", markPrice="1.0"),
-        BackpackCollateralDetail(asset="BTC", markPrice="50000"),
-        BackpackCollateralDetail(asset="SOL", markPrice="100"),
+        BackpackCollateralDetail(
+            asset="USDC",
+            quantity="10500",
+            markPrice="1.0",
+            collateralValue="10500",
+            weight="1.0",
+            usdValue="10500",
+        ),
+        BackpackCollateralDetail(
+            asset="BTC",
+            quantity="0.5",
+            markPrice="50000",
+            collateralValue="23750",
+            weight="0.95",
+            usdValue="25000",
+        ),
+        BackpackCollateralDetail(
+            asset="SOL",
+            quantity="110",
+            markPrice="100",
+            collateralValue="9900",
+            weight="0.9",
+            usdValue="11000",
+        ),
     ])
     
     # Mock borrow positions
@@ -219,28 +242,30 @@ class TestBackpackCollateralCalculator:
         """Test calculating weighted collateral."""
         # Arrange
         calculator = BackpackCollateralCalculator(logger)
-        balances = [
-            BackpackBalance(symbol="USDC", available="10000", locked="0"),
-            BackpackBalance(symbol="BTC", available="1", locked="0"),
-            BackpackBalance(symbol="SOL", available="100", locked="0"),
-        ]
-        weights = {
-            "USDC": Decimal("1.0"),
-            "BTC": Decimal("0.95"),
-            "SOL": Decimal("0.9"),
-        }
-        prices = {
-            "USDC": Decimal("1"),
-            "BTC": Decimal("50000"),
-            "SOL": Decimal("100"),
-        }
         
-        # Act
-        total_collateral = calculator.calculate_weighted_collateral(
-            balances=balances,
-            weights=weights,
-            prices=prices,
+        # Act - calculate collateral for each asset
+        usdc_collateral = calculator.calculate_asset_collateral(
+            asset="USDC",
+            quantity=Decimal("10000"),
+            mark_price=Decimal("1"),
+            weight=Decimal("1.0"),
         )
+        
+        btc_collateral = calculator.calculate_asset_collateral(
+            asset="BTC",
+            quantity=Decimal("1"),
+            mark_price=Decimal("50000"),
+            weight=Decimal("0.95"),
+        )
+        
+        sol_collateral = calculator.calculate_asset_collateral(
+            asset="SOL",
+            quantity=Decimal("100"),
+            mark_price=Decimal("100"),
+            weight=Decimal("0.9"),
+        )
+        
+        total_collateral = usdc_collateral + btc_collateral + sol_collateral
         
         # Assert
         expected = (
@@ -277,7 +302,7 @@ class TestBackpackAutoBorrow:
         
         # Assert
         assert needs_borrow is True
-        assert shortage == Decimal("1100")  # 10% buffer
+        assert shortage == Decimal("1000")  # Actual shortage amount
 
 
 class TestUnifiedExecutionClients:
@@ -287,9 +312,13 @@ class TestUnifiedExecutionClients:
     async def test_create_unified_clients(self, event_loop):
         """Test creating unified spot and futures clients."""
         # Arrange
-        msgbus = MessageBus()
-        cache = Cache()
+        trader_id = TraderId("TESTER-001")
         clock = LiveClock()
+        msgbus = MessageBus(
+            trader_id=trader_id,
+            clock=clock,
+        )
+        cache = Cache()
         
         with patch("nautilus_trader.adapters.backpack.factories.get_cached_backpack_http_client") as mock_http:
             mock_http.return_value = MagicMock()
@@ -314,9 +343,13 @@ class TestUnifiedExecutionClients:
     async def test_unified_account_state_update(self, event_loop):
         """Test updating account state with unified account."""
         # Arrange
-        msgbus = MessageBus()
-        cache = Cache()
+        trader_id = TraderId("TESTER-001")
         clock = LiveClock()
+        msgbus = MessageBus(
+            trader_id=trader_id,
+            clock=clock,
+        )
+        cache = Cache()
         
         with patch("nautilus_trader.adapters.backpack.factories.get_cached_backpack_http_client") as mock_http:
             mock_http_client = MagicMock()

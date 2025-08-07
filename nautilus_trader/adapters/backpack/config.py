@@ -55,15 +55,16 @@ class BackpackDataClientConfig(LiveDataClientConfig, frozen=True):
 
     def __post_init__(self) -> None:
         """Post-initialization to set defaults from environment."""
+        # For frozen dataclasses, we need to use __dict__ approach during initialization
         # Override with environment variables if not set
         if self.api_key is None:
-            object.__setattr__(self, "api_key", os.getenv("BACKPACK_API_KEY"))
+            super().__setattr__("api_key", os.getenv("BACKPACK_API_KEY"))
         if self.api_secret is None:
-            object.__setattr__(self, "api_secret", os.getenv("BACKPACK_API_SECRET"))
+            super().__setattr__("api_secret", os.getenv("BACKPACK_API_SECRET"))
         if self.base_url is None:
-            object.__setattr__(self, "base_url", BACKPACK_BASE_URL_PROD)
+            super().__setattr__("base_url", BACKPACK_BASE_URL_PROD)
         if self.ws_url is None:
-            object.__setattr__(self, "ws_url", BACKPACK_WS_URL_PROD)
+            super().__setattr__("ws_url", BACKPACK_WS_URL_PROD)
 
 
 class BackpackExecClientConfig(LiveExecClientConfig, frozen=True):
@@ -95,12 +96,13 @@ class BackpackExecClientConfig(LiveExecClientConfig, frozen=True):
 
     def __post_init__(self) -> None:
         """Post-initialization to set defaults from environment."""
+        # For frozen dataclasses, we need to use __dict__ approach during initialization
         # Override with environment variables if not set
         if self.api_key is None:
-            object.__setattr__(self, "api_key", os.getenv("BACKPACK_API_KEY"))
+            super().__setattr__("api_key", os.getenv("BACKPACK_API_KEY"))
         if self.api_secret is None:
-            object.__setattr__(self, "api_secret", os.getenv("BACKPACK_API_SECRET"))
+            super().__setattr__("api_secret", os.getenv("BACKPACK_API_SECRET"))
         if self.base_url is None:
-            object.__setattr__(self, "base_url", BACKPACK_BASE_URL_PROD)
+            super().__setattr__("base_url", BACKPACK_BASE_URL_PROD)
         if self.ws_url is None:
-            object.__setattr__(self, "ws_url", BACKPACK_WS_URL_PROD)
+            super().__setattr__("ws_url", BACKPACK_WS_URL_PROD)

@@ -26,7 +26,7 @@ from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.objects import Price
 
 
-class BackpackMarkPrice(msgspec.Struct, frozen=True):
+class BackpackMarkPrice(msgspec.Struct, frozen=True, kw_only=True):
     """
     Schema for Backpack mark price data.
     
@@ -42,10 +42,10 @@ class BackpackMarkPrice(msgspec.Struct, frozen=True):
         The current funding rate.
     nextFundingTime : int
         The next funding time in milliseconds.
-    openInterest : str, optional
-        The open interest.
     timestamp : int
         The timestamp in milliseconds.
+    openInterest : str, optional
+        The open interest.
     """
     
     symbol: str
@@ -53,8 +53,8 @@ class BackpackMarkPrice(msgspec.Struct, frozen=True):
     indexPrice: str
     fundingRate: str
     nextFundingTime: int
-    openInterest: str | None = None
     timestamp: int
+    openInterest: str | None = None
     
     def parse_to_mark_price_update(
         self,

@@ -82,7 +82,7 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
     def __init__(
         self,
         loop: asyncio.AbstractEventLoop,
-        http_client: BackpackHttpClient,
+        client: BackpackHttpClient,
         msgbus: MessageBus,
         cache: Cache,
         clock: LiveClock,
@@ -92,7 +92,7 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         # Initialize parent class
         super().__init__(
             loop=loop,
-            client=http_client,
+            client=client,
             msgbus=msgbus,
             cache=cache,
             clock=clock,
@@ -104,7 +104,7 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         self._oms_type = OmsType.HEDGING  # Futures uses hedging
         
         # Futures-specific HTTP API
-        self._futures_http_position = BackpackFuturesPositionHttpAPI(http_client)
+        self._futures_http_position = BackpackFuturesPositionHttpAPI(client)
         
         # Position tracking
         self._is_dual_side_position = True  # Futures always uses dual-side (hedge mode)

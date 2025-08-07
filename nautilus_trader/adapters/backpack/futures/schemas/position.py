@@ -27,13 +27,12 @@ from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import PositionSide
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.identifiers import PositionId
-from nautilus_trader.model.identifiers import VenuePositionId
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
 
 
-class BackpackFuturesPosition(msgspec.Struct, frozen=True):
+class BackpackFuturesPosition(msgspec.Struct, frozen=True, kw_only=True):
     """
     Schema for Backpack futures position data.
     

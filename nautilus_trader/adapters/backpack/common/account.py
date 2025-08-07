@@ -16,6 +16,7 @@
 Backpack Exchange unified account management.
 """
 
+import time
 from decimal import Decimal
 
 from nautilus_trader.accounting.accounts.margin import MarginAccount
@@ -26,8 +27,10 @@ from nautilus_trader.adapters.backpack.schemas.account import BackpackCapital
 from nautilus_trader.adapters.backpack.schemas.account import BackpackUnifiedAccount
 from nautilus_trader.common.component import Logger
 from nautilus_trader.core.datetime import millis_to_nanos
-from nautilus_trader.model.currency import Currency
+from nautilus_trader.core.uuid import UUID4
+from nautilus_trader.model.currencies import Currency
 from nautilus_trader.model.enums import AccountType
+from nautilus_trader.model.events.account import AccountState
 from nautilus_trader.model.identifiers import AccountId
 from nautilus_trader.model.objects import AccountBalance
 from nautilus_trader.model.objects import MarginBalance
@@ -91,11 +94,37 @@ class BackpackUnifiedAccountManager:
         # Fetch initial account state
         await self.refresh_account_state()
         
-        # Create Nautilus account
-        self._nautilus_account = MarginAccount(
+        # Create initial AccountState event
+        balances = []
+        if self._unified_account:
+            for balance in self._unified_account.balances:
+                currency = Currency.from_str(balance.symbol)
+                total = Decimal(balance.available) + Decimal(balance.locked)
+                balances.append(
+                    AccountBalance(
+                        total=Money(total, currency),
+                        locked=Money(Decimal(balance.locked), currency),
+                        free=Money(Decimal(balance.available), currency),
+                    )
+                )
+        
+        # Create account state event
+        event = AccountState(
             account_id=account_id,
-            type=AccountType.MARGIN,  # Unified is margin type
+            account_type=AccountType.MARGIN,
             base_currency=base_currency,
+            reported=True,
+            balances=balances,
+            margins=[],
+            info={},
+            event_id=UUID4(),
+            ts_event=millis_to_nanos(int(time.time() * 1000)),
+            ts_init=millis_to_nanos(int(time.time() * 1000)),
+        )
+        
+        # Create Nautilus account with the event
+        self._nautilus_account = MarginAccount(
+            event=event,
             calculate_account_state=True,
         )
         
@@ -188,7 +217,6 @@ class BackpackUnifiedAccountManager:
             locked = Decimal(balance.locked)
             
             account_balance = AccountBalance(
-                currency=currency,
                 total=Money(total, currency),
                 free=Money(free, currency),
                 locked=Money(locked, currency),
@@ -199,18 +227,17 @@ class BackpackUnifiedAccountManager:
             weight = self._collateral_weights.get(balance.symbol, Decimal(0))
             if weight > 0:
                 margin_balance = MarginBalance(
-                    currency=currency,
                     initial=Money(total * weight * Decimal("0.9"), currency),  # 90% of collateral
                     maintenance=Money(total * weight * Decimal("0.95"), currency),  # 95% of collateral
                 )
                 margins.append(margin_balance)
         
-        # Update account
-        self._nautilus_account.update_balances(
-            balances=balances,
-            margins=margins,
-            ts_event=self._unified_account.timestamp,
-        )
+        # Update account balances
+        self._nautilus_account.update_balances(balances)
+        
+        # Update margins individually  
+        for margin in margins:
+            self._nautilus_account.update_margin(margin)
     
     def get_unified_positions(self) -> list[dict]:
         """

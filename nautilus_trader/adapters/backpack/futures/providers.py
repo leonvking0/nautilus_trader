@@ -20,7 +20,7 @@ from decimal import Decimal
 
 from nautilus_trader.adapters.backpack.common.constants import BACKPACK_VENUE
 from nautilus_trader.adapters.backpack.http.client import BackpackHttpClient
-from nautilus_trader.adapters.backpack.parsing import parse_futures_instrument
+from nautilus_trader.adapters.backpack.parsing import parse_instrument_id
 from nautilus_trader.adapters.backpack.providers import BackpackInstrumentProvider
 from nautilus_trader.adapters.backpack.schemas.market import BackpackMarket
 from nautilus_trader.common.component import LiveClock
