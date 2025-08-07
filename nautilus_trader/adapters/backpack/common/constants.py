@@ -99,6 +99,14 @@ BACKPACK_API_PATHS: Final[dict[str, str]] = {
     "funding": "/api/v1/funding",
     "deposit_address": "/api/v1/depositAddress",
     "withdraw_request": "/api/v1/requestWithdrawal",
+    # Historical data endpoints
+    "trades_history": "/api/v1/trades/history",
+    "order_history": "/wapi/v1/history/orders",
+    "fill_history": "/wapi/v1/history/fills",
+    "pnl_history": "/wapi/v1/history/pnl",
+    "funding_history": "/wapi/v1/history/funding",
+    "interest_history": "/wapi/v1/history/interest",
+    "dust_history": "/wapi/v1/history/dust",
 }
 
 # WebSocket streams

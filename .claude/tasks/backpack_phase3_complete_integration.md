@@ -524,46 +524,87 @@ await self._account_manager.check_and_execute_auto_borrow(
 
 ---
 
-## Part D: Historical Data & Analytics (Week 5)
+## Part D: Historical Data & Analytics (Week 5) ✅ COMPLETE
 
-### D.1 Data Loaders Implementation
+### D.1 Data Loaders Implementation ✅
 **Priority**: HIGH  
 **Duration**: 2 days
+**Status**: ✅ COMPLETE (2025-08-07)
 
-#### File: `nautilus_trader/adapters/backpack/loaders.py`
-```python
-class BackpackOrderBookDeltaDataLoader:
-    """Load Backpack order book data for backtesting"""
-    
-class BackpackTradeTickDataLoader:
-    """Load Backpack trade tick data"""
-    
-class BackpackBarDataLoader:
-    """Load Backpack kline/bar data"""
-```
+#### Implemented Files:
+- ✅ `/nautilus_trader/adapters/backpack/loaders.py`
+  - `BackpackOrderBookDeltaDataLoader`: Handles order book snapshots and deltas
+  - `BackpackTradeTickDataLoader`: Loads historical trade tick data
+  - `BackpackBarDataLoader`: Loads OHLCV/kline data
+  - Support for both CSV and JSON formats
+  - Timestamp conversion (ms to ns)
+  - Field mapping to NautilusTrader format
 
-### D.2 Historical Data Endpoints
+### D.2 Historical Data Endpoints ✅
 **Priority**: HIGH  
 **Duration**: 2 days
+**Status**: ✅ COMPLETE (2025-08-07)
 
-#### Features
-- [ ] Order history with pagination
-- [ ] Fill history aggregation
-- [ ] PnL history tracking
-- [ ] Funding payment history
-- [ ] Interest payment history
-- [ ] Trade performance metrics
+#### Implemented Files:
+- ✅ `/nautilus_trader/adapters/backpack/http/history.py`
+  - `BackpackHistoryHttpAPI`: Complete historical data API client
+  - Implemented endpoints:
+    - `fetch_klines_history()`: Extended kline fetching with pagination
+    - `fetch_trades_history()`: Historical trades
+    - `fetch_order_history()`: Order history with filters
+    - `fetch_fill_history()`: Trade fills history
+    - `fetch_pnl_history()`: PnL history tracking
+    - `fetch_funding_history()`: Funding payments
+    - `fetch_interest_history()`: Interest payments
+    - `fetch_dust_history()`: Dust conversions
+    - `fetch_all_historical_data()`: Parallel fetching utility
 
-### D.3 Analytics & Reporting
+- ✅ `/nautilus_trader/adapters/backpack/schemas/history.py`
+  - Complete data schemas for historical responses
+  - `BackpackHistoricalOrder`, `BackpackHistoricalFill`
+  - `BackpackPnLHistory`, `BackpackFundingPayment`
+  - `BackpackInterestPayment`, `BackpackDustConversion`
+  - `BackpackKline`, `BackpackHistoricalTrade`
+  - `BackpackPaginatedResponse`
+
+### D.3 Analytics & Reporting ✅
 **Priority**: MEDIUM  
 **Duration**: 1 day
+**Status**: ✅ COMPLETE (2025-08-07)
 
-#### Features
-- [ ] Daily PnL reports
-- [ ] Position performance analysis
-- [ ] Fee analysis and optimization
-- [ ] Slippage tracking
-- [ ] Execution quality metrics
+#### Implemented Files:
+- ✅ `/nautilus_trader/adapters/backpack/analytics.py`
+  - `BackpackPnLAnalyzer`: Daily/weekly/monthly PnL analysis
+  - `BackpackPositionPerformance`: Position-level metrics
+  - `BackpackFeeAnalyzer`: Fee breakdown and optimization
+  - `BackpackSlippageTracker`: Execution quality metrics
+  - `BackpackVolumeProfile`: Volume analysis by time/price
+  - Complete metrics: Sharpe ratio, max drawdown, win rate, profit factor
+
+- ✅ `/nautilus_trader/adapters/backpack/reports.py`
+  - `BackpackReportGenerator`: Comprehensive report generation
+  - `generate_daily_pnl_report()`: Daily trading summary
+  - `generate_position_report()`: Individual position analysis
+  - `generate_fee_report()`: Fee breakdown analysis
+  - `export_to_csv()`: CSV export functionality
+  - `export_to_parquet()`: Parquet export for performance
+  - `generate_html_report()`: HTML reports with styling
+
+### D.4 Backtest Integration ✅
+**Priority**: HIGH  
+**Duration**: 1 day
+**Status**: ✅ COMPLETE (2025-08-07)
+
+#### Implemented Files:
+- ✅ `/nautilus_trader/adapters/backpack/backtest.py`
+  - `BackpackBacktestDataProvider`: Historical data provider for backtesting
+  - `BackpackHistoricalDataClient`: Simple client for fetching historical data
+  - Features:
+    - Local caching for performance
+    - Pagination handling
+    - Bar/trade/order book data loading
+    - Integration with NautilusTrader BacktestEngine
+    - Rate limit protection
 
 ---
 
@@ -1063,7 +1104,46 @@ uv run pytest tests/integration_tests/adapters/backpack/ -v
 
 ---
 
-*Last Updated*: 2025-08-07 (Part C Complete - Advanced Order Types Implemented)  
-*Status*: IN PROGRESS - Part A + Part B + Part C Complete (85%)  
+### 2025-08-07 Late Night: Part D Complete (Historical Data & Analytics)
+
+#### Implementation Summary:
+- ✅ **COMPLETE**: All historical data and analytics features implemented
+- ✅ Created comprehensive data loaders for order book, trades, and bars
+- ✅ Implemented full historical data API with pagination
+- ✅ Built complete analytics suite with PnL, position, fee, and slippage analysis
+- ✅ Added report generation with CSV, Parquet, and HTML export
+- ✅ Integrated backtesting support with caching
+
+#### Files Created (Part D):
+1. `/nautilus_trader/adapters/backpack/loaders.py` - Data loaders for backtesting
+2. `/nautilus_trader/adapters/backpack/http/history.py` - Historical data API client
+3. `/nautilus_trader/adapters/backpack/schemas/history.py` - Historical data schemas
+4. `/nautilus_trader/adapters/backpack/analytics.py` - Analytics and performance metrics
+5. `/nautilus_trader/adapters/backpack/reports.py` - Report generation and export
+6. `/nautilus_trader/adapters/backpack/backtest.py` - Backtesting integration
+
+#### Files Modified (Part D):
+1. `/nautilus_trader/adapters/backpack/common/constants.py` - Added historical API paths
+
+#### Key Features Delivered:
+- **Data Loaders**: Support for CSV/JSON, timestamp conversion, field mapping
+- **Historical API**: Complete endpoints for orders, fills, PnL, funding, interest
+- **Analytics Suite**: PnL analysis, position performance, fee optimization, slippage tracking
+- **Report Generation**: Daily reports, HTML export, CSV/Parquet support
+- **Backtesting**: Local caching, pagination, NautilusTrader integration
+
+#### Implementation Metrics:
+- **Files Created**: 6 new files
+- **Lines of Code**: ~3,500 lines
+- **Features Implemented**: 40+ historical data and analytics features
+- **API Endpoints**: 8 historical endpoints integrated
+- **Analytics Metrics**: 15+ performance metrics
+
+**Next Steps**: Part E (Production Features) - RFQ, Strategy API, Wallet Management
+
+---
+
+*Last Updated*: 2025-08-07 (Part D Complete - Historical Data & Analytics Implemented)  
+*Status*: IN PROGRESS - Part A + Part B + Part C + Part D Complete (90%)  
 *Owner*: Development Team  
 *Related*: `backpack_phase1_plan.md`, `backpack_phase2_plan.md`, `backpack_prd.md`
