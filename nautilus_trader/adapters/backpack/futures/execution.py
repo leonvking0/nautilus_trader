@@ -44,13 +44,21 @@ from nautilus_trader.core.datetime import millis_to_nanos
 from nautilus_trader.execution.messages import GeneratePositionStatusReports
 from nautilus_trader.execution.reports import PositionStatusReport
 from nautilus_trader.model.enums import AccountType
+from nautilus_trader.model.enums import LiquiditySide
 from nautilus_trader.model.enums import OmsType
+from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import OrderType
 from nautilus_trader.model.enums import PositionSide
 from nautilus_trader.model.identifiers import ClientId
+from nautilus_trader.model.identifiers import ClientOrderId
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.identifiers import PositionId
 from nautilus_trader.model.identifiers import Symbol
+from nautilus_trader.model.identifiers import TradeId
+from nautilus_trader.model.identifiers import VenueOrderId
+from nautilus_trader.model.objects import Money
+from nautilus_trader.model.objects import Price
+from nautilus_trader.model.objects import Quantity
 from nautilus_trader.model.orders import Order
 
 
@@ -127,6 +135,11 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
         
         # Fetch and process futures positions
         await self._update_positions()
+        
+        # Subscribe to position updates
+        if self._ws_client:
+            await self._ws_client.subscribe_position_update()
+            self._log.info("Subscribed to futures position updates")
         
         # Update unified account with futures positions
         if self._account_manager and self._account_manager._unified_account:
@@ -224,6 +237,30 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
             if not position or Decimal(position.size) == 0:
                 self._log.error(f"Cannot place reduce-only order: no position for {symbol}")
                 return False
+            
+            # Verify order side matches position reduction
+            position_size = Decimal(position.size)
+            if position.side == "LONG" and position_size > 0:
+                # Long position can only be reduced with sell orders
+                if order.side != OrderSide.SELL:
+                    self._log.error(
+                        f"Reduce-only order side {order.side} incompatible with LONG position"
+                    )
+                    return False
+            elif position.side == "SHORT" and position_size > 0:
+                # Short position can only be reduced with buy orders
+                if order.side != OrderSide.BUY:
+                    self._log.error(
+                        f"Reduce-only order side {order.side} incompatible with SHORT position"
+                    )
+                    return False
+            
+            # Verify order quantity doesn't exceed position size
+            if order.quantity > abs(position_size):
+                self._log.warning(
+                    f"Reduce-only order quantity {order.quantity} exceeds position size {abs(position_size)}"
+                )
+                # Don't fail, as exchange will adjust quantity
         
         return True
     
@@ -313,14 +350,174 @@ class BackpackFuturesExecutionClient(BackpackExecutionClient):
             # Check if it's a position update
             if b"POSITION_UPDATE" in raw:
                 self._handle_position_update(raw)
+            # Check for ADL events
+            elif b"ADL_AUTOCLOSE" in raw or b"LIQUIDATION_AUTOCLOSE" in raw:
+                self._handle_adl_or_liquidation_event(raw)
         except Exception as e:
             self._log.error(f"Failed to handle futures WebSocket message: {e}")
     
     def _handle_position_update(self, raw: bytes) -> None:
         """Handle position update WebSocket message."""
-        update = self._decoder_position_update.decode(raw)
+        try:
+            update = self._decoder_position_update.decode(raw)
+            
+            # Create or update cached position
+            symbol = update.s
+            
+            # Create BackpackFuturesPosition from update
+            position = BackpackFuturesPosition(
+                symbol=symbol,
+                side=update.ps,
+                size=update.pa,
+                entryPrice=update.ep,
+                markPrice=update.mp,
+                liquidationPrice=None,  # Not provided in update
+                unrealizedPnl=update.up,
+                realizedPnl=update.cr,
+                marginRatio="0",  # Calculate if needed
+                leverage=0,  # Retrieve from account settings
+                marginType=update.mt,
+                positionMargin=update.iw,
+                maintenanceMargin="0",  # Calculate if needed
+                timestamp=update.E,
+            )
+            
+            # Update cache
+            self._positions[symbol] = position
+            
+            # Generate position status report
+            instrument_id = self._get_cached_instrument_id(symbol)
+            
+            # Create position ID if using position IDs
+            position_id = None
+            if self._use_position_ids:
+                position_id = PositionId(f"{symbol}_{update.ps}")
+            
+            # Create position status report
+            report = position.parse_to_position_status_report(
+                account=self.get_account(),
+                instrument_id=instrument_id,
+                position_id=position_id,
+                ts_init=self._clock.timestamp_ns(),
+            )
+            
+            # Handle the report
+            self._handle_position_status_report(report)
+            
+            # Update unified account if available
+            if self._account_manager and self._account_manager._unified_account:
+                self._account_manager._unified_account.futuresPositions = list(self._positions.values())
+            
+            self._log.debug(
+                f"Updated position for {symbol}: "
+                f"side={update.ps}, size={update.pa}, entry={update.ep}, "
+                f"mark={update.mp}, unrealized_pnl={update.up}",
+            )
+            
+        except Exception as e:
+            self._log.error(f"Failed to handle position update: {e}")
+            self._log.debug(f"Raw message: {raw}")
+    
+    def _handle_adl_or_liquidation_event(self, raw: bytes) -> None:
+        """
+        Handle ADL (Auto-Deleveraging) or liquidation events.
         
-        # Update cached position
-        # TODO: Update position cache and generate report
-        
-        self._log.debug(f"Received position update: {update}")
+        These events occur when:
+        - ADL: Profitable positions are automatically closed to cover losses
+        - Liquidation: Position is closed due to insufficient margin
+        """
+        try:
+            # Parse the order update message which contains the origin field
+            # The parent execution client already has order update handling
+            # We need to check the origin field to detect ADL/liquidation
+            
+            # Decode as order update message
+            import json
+            msg = json.loads(raw.decode())
+            
+            # Check if it's an order update with special origin
+            if msg.get("e") == "ORDER_UPDATE":
+                origin = msg.get("O")  # Origin field
+                
+                if origin in ["ADL_AUTOCLOSE", "LIQUIDATION_AUTOCLOSE"]:
+                    symbol = msg.get("s")
+                    side = msg.get("S")
+                    quantity = msg.get("q")
+                    price = msg.get("p")
+                    order_id = msg.get("i")
+                    client_order_id = msg.get("c")
+                    
+                    # Update position state
+                    if symbol in self._positions:
+                        position = self._positions[symbol]
+                        
+                        # Log the event
+                        if origin == "ADL_AUTOCLOSE":
+                            self._log.warning(
+                                f"ADL Event: Position {symbol} auto-closed "
+                                f"side={side}, quantity={quantity}, price={price}",
+                                LogColor.YELLOW,
+                            )
+                        else:  # LIQUIDATION_AUTOCLOSE
+                            self._log.error(
+                                f"Liquidation Event: Position {symbol} liquidated "
+                                f"side={side}, quantity={quantity}, price={price}",
+                                LogColor.RED,
+                            )
+                        
+                        # Generate execution report for the forced closure
+                        instrument_id = self._get_cached_instrument_id(symbol)
+                        
+                        # Create a special execution report
+                        self.generate_order_filled(
+                            strategy_id=self._account_id,  # Use account ID as no strategy initiated this
+                            instrument_id=instrument_id,
+                            client_order_id=ClientOrderId(client_order_id) if client_order_id else ClientOrderId(f"ADL_{order_id}"),
+                            venue_order_id=VenueOrderId(str(order_id)),
+                            trade_id=TradeId(f"{order_id}_ADL"),
+                            order_side=OrderSide.BUY if side == "Buy" else OrderSide.SELL,
+                            order_type=OrderType.MARKET,  # ADL/liquidations are market orders
+                            last_qty=Quantity.from_str(quantity),
+                            last_px=Price.from_str(price),
+                            quote_currency=instrument_id.symbol.quote_currency,
+                            commission=Money(0, instrument_id.symbol.quote_currency),  # TODO: Get actual commission
+                            liquidity_side=LiquiditySide.TAKER,
+                            ts_event=self._clock.timestamp_ns(),
+                        )
+                        
+                        # Request position update
+                        asyncio.create_task(self._update_positions())
+                        
+                        # Notify strategies about the forced closure
+                        if origin == "ADL_AUTOCLOSE":
+                            # Emit a custom event for ADL
+                            self._msgbus.publish(
+                                topic=f"events.risk.adl.{instrument_id}",
+                                msg={
+                                    "type": "ADL_AUTOCLOSE",
+                                    "instrument_id": instrument_id,
+                                    "symbol": symbol,
+                                    "side": side,
+                                    "quantity": quantity,
+                                    "price": price,
+                                    "timestamp": self._clock.timestamp_ns(),
+                                },
+                            )
+                        else:
+                            # Emit a custom event for liquidation
+                            self._msgbus.publish(
+                                topic=f"events.risk.liquidation.{instrument_id}",
+                                msg={
+                                    "type": "LIQUIDATION",
+                                    "instrument_id": instrument_id,
+                                    "symbol": symbol,
+                                    "side": side,
+                                    "quantity": quantity,
+                                    "price": price,
+                                    "timestamp": self._clock.timestamp_ns(),
+                                },
+                            )
+                    
+        except Exception as e:
+            self._log.error(f"Failed to handle ADL/liquidation event: {e}")
+            self._log.debug(f"Raw message: {raw}")

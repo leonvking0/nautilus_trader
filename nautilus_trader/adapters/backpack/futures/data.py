@@ -163,48 +163,134 @@ class BackpackFuturesDataClient(BackpackDataClient):
     
     def _handle_mark_price_msg(self, raw: bytes) -> None:
         """Handle mark price WebSocket message."""
-        msg = self._decoder_mark_price.decode(raw)
-        
-        # Get instrument ID
-        instrument_id = self._get_cached_instrument_id(msg.data.symbol)
-        
-        # Parse to mark price update
-        mark_price_update = msg.data.parse_to_mark_price_update(
-            instrument_id=instrument_id,
-            ts_init=self._clock.timestamp_ns(),
-        )
-        
-        # Create custom data wrapper
-        data_type = DataType(
-            BackpackFuturesMarkPriceUpdate,
-            metadata={"instrument_id": instrument_id},
-        )
-        custom_data = CustomData(data_type=data_type, data=mark_price_update)
-        
-        # Handle the custom data
-        self._handle_data(custom_data)
-        
-        # Also emit standard MarkPriceUpdate
-        self._handle_data(
-            MarkPriceUpdate(
+        try:
+            msg = self._decoder_mark_price.decode(raw)
+            
+            # Get instrument ID
+            instrument_id = self._get_cached_instrument_id(msg.data.symbol)
+            
+            # Parse to mark price update
+            mark_price_update = msg.data.parse_to_mark_price_update(
                 instrument_id=instrument_id,
-                price=mark_price_update.mark_price,
-                ts_event=mark_price_update.ts_event,
-                ts_init=mark_price_update.ts_init,
-            ),
-        )
+                ts_init=self._clock.timestamp_ns(),
+            )
+            
+            # Create custom data wrapper for extended futures data
+            data_type = DataType(
+                BackpackFuturesMarkPriceUpdate,
+                metadata={"instrument_id": instrument_id},
+            )
+            custom_data = CustomData(data_type=data_type, data=mark_price_update)
+            
+            # Handle the custom data
+            self._handle_data(custom_data)
+            
+            # Also emit standard MarkPriceUpdate for compatibility
+            self._handle_data(
+                MarkPriceUpdate(
+                    instrument_id=instrument_id,
+                    price=mark_price_update.mark_price,
+                    ts_event=mark_price_update.ts_event,
+                    ts_init=mark_price_update.ts_init,
+                ),
+            )
+            
+            self._log.debug(
+                f"Mark price update for {msg.data.symbol}: "
+                f"mark={msg.data.markPrice}, index={msg.data.indexPrice}, "
+                f"funding={msg.data.fundingRate}, next_funding={msg.data.nextFundingTime}",
+            )
+            
+        except Exception as e:
+            self._log.error(f"Failed to handle mark price message: {e}")
+            self._log.debug(f"Raw message: {raw}")
     
     def _handle_funding_rate_msg(self, raw: bytes) -> None:
         """Handle funding rate WebSocket message."""
-        msg = self._decoder_funding_rate.decode(raw)
-        # TODO: Implement funding rate handling
-        self._log.debug(f"Received funding rate: {msg.data}")
+        try:
+            msg = self._decoder_funding_rate.decode(raw)
+            
+            # Get instrument ID
+            instrument_id = self._get_cached_instrument_id(msg.data.symbol)
+            
+            # Create custom funding rate data
+            funding_data = {
+                "instrument_id": instrument_id,
+                "funding_rate": Decimal(msg.data.fundingRate),
+                "funding_time": msg.data.fundingTime,
+                "ts_event": millis_to_nanos(msg.data.fundingTime),
+                "ts_init": self._clock.timestamp_ns(),
+            }
+            
+            # Create custom data type for funding rate
+            data_type = DataType(
+                type=CustomData,
+                metadata={
+                    "instrument_id": instrument_id,
+                    "data_type": "FUNDING_RATE",
+                },
+            )
+            
+            # Wrap in CustomData
+            custom_data = CustomData(
+                data_type=data_type,
+                data=funding_data,
+            )
+            
+            # Handle the custom data
+            self._handle_data(custom_data)
+            
+            self._log.debug(
+                f"Funding rate update for {msg.data.symbol}: "
+                f"rate={msg.data.fundingRate}, time={msg.data.fundingTime}",
+            )
+            
+        except Exception as e:
+            self._log.error(f"Failed to handle funding rate message: {e}")
+            self._log.debug(f"Raw message: {raw}")
     
     def _handle_open_interest_msg(self, raw: bytes) -> None:
         """Handle open interest WebSocket message."""
-        msg = self._decoder_open_interest.decode(raw)
-        # TODO: Implement open interest handling
-        self._log.debug(f"Received open interest: {msg.data}")
+        try:
+            msg = self._decoder_open_interest.decode(raw)
+            
+            # Get instrument ID
+            instrument_id = self._get_cached_instrument_id(msg.data.symbol)
+            
+            # Create custom open interest data
+            oi_data = {
+                "instrument_id": instrument_id,
+                "open_interest": Decimal(msg.data.openInterest),
+                "ts_event": millis_to_nanos(msg.data.timestamp),
+                "ts_init": self._clock.timestamp_ns(),
+            }
+            
+            # Create custom data type for open interest
+            data_type = DataType(
+                type=CustomData,
+                metadata={
+                    "instrument_id": instrument_id,
+                    "data_type": "OPEN_INTEREST",
+                },
+            )
+            
+            # Wrap in CustomData
+            custom_data = CustomData(
+                data_type=data_type,
+                data=oi_data,
+            )
+            
+            # Handle the custom data
+            self._handle_data(custom_data)
+            
+            self._log.debug(
+                f"Open interest update for {msg.data.symbol}: "
+                f"open_interest={msg.data.openInterest}",
+            )
+            
+        except Exception as e:
+            self._log.error(f"Failed to handle open interest message: {e}")
+            self._log.debug(f"Raw message: {raw}")
     
     def _handle_mark_price_update(self, data: BackpackFuturesMarkPriceUpdate) -> None:
         """Handle mark price update custom data."""
