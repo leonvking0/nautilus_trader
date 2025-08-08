@@ -46,7 +46,7 @@ from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
 from nautilus_trader.model.orders import Order
-from nautilus_trader.msgbus.bus import MessageBus
+from nautilus_trader.common.component import MessageBus
 
 
 class SystemOrderType(Enum):
