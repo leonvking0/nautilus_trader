@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
-from nautilus_trader.backtest.data.providers import TestInstrumentProvider
+from nautilus_trader.test_kit.providers import TestInstrumentProvider
 from nautilus_trader.common.component import Logger
 from nautilus_trader.core.uuid import UUID4
 from nautilus_trader.model.data import Bar
@@ -46,7 +46,7 @@ from nautilus_trader.model.enums import PriceType
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.identifiers import TradeId
 from nautilus_trader.model.instruments import CryptoPerpetual
-from nautilus_trader.model.instruments import CryptoSpot
+from nautilus_trader.model.instruments import CurrencyPair
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
