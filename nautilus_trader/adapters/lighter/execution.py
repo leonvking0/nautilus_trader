@@ -427,7 +427,7 @@ class LighterExecutionClient(LiveExecutionClient):
             avg_px_open=avg_px_open,
         )
 
-    async def _cancel_all_orders(self, command: CancelAllOrders) -> None:
+    async def _cancel_all_orders(self, command: CancelAllOrders) -> None:  # noqa: C901
         # Placeholder: loop through active orders via REST until WS schema is known.
         token = self._ensure_auth_token()
         if not token:
@@ -478,9 +478,9 @@ class LighterExecutionClient(LiveExecutionClient):
                         continue
                     coi = self._client_order_index(client_order_id)
                     await self._execute_with_retry(
-                        lambda nonce: self._signer.sign_cancel_order(
-                            market_index=market_index,
-                            order_index=coi,
+                        lambda nonce, mi=market_index, oi=coi: self._signer.sign_cancel_order(
+                            market_index=mi,
+                            order_index=oi,
                             nonce=nonce,
                         ),
                         op_name="cancel_all",
@@ -794,7 +794,7 @@ class LighterExecutionClient(LiveExecutionClient):
         if callable(converter):
             try:
                 return converter(price)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
         scale = self._price_scale(instrument)
         return int(Decimal(str(price)) * (Decimal(10) ** scale))
@@ -817,7 +817,7 @@ class LighterExecutionClient(LiveExecutionClient):
         if callable(converter):
             try:
                 return converter(quantity)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
         scale = self._size_scale(instrument)
         return int(Decimal(str(quantity)) * (Decimal(10) ** scale))
@@ -970,7 +970,7 @@ class LighterExecutionClient(LiveExecutionClient):
         for market_index_str, orders in orders_by_market.items():
             try:
                 market_index = int(market_index_str)
-            except Exception:
+            except Exception:  # noqa: S112
                 continue
 
             instrument = self._instrument_for_market_index(market_index)
@@ -998,7 +998,7 @@ class LighterExecutionClient(LiveExecutionClient):
             if idx == market_index:
                 try:
                     instrument_id = InstrumentId.from_str(instrument_key)
-                except Exception:
+                except Exception:  # noqa: S112
                     continue
 
                 instrument = self._instrument_provider.find(instrument_id)
@@ -1014,7 +1014,7 @@ def _get(order: Any, *keys: str, default=None):
         if hasattr(order, key):
             try:
                 return getattr(order, key)
-            except Exception:  # pragma: no cover - defensive
+            except Exception:  # noqa: S112  # pragma: no cover - defensive
                 continue
     return default
 

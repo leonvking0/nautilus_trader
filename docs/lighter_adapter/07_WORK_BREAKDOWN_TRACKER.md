@@ -76,6 +76,7 @@
   - [ ] Balance fetching (AccountState updates) - deferred to PR5
 
 **PR4 Implementation Notes**:
+
 - Branch: `pr3` (merged with previous work)
 - Commits:
   - `587242363` lighter: add account/position models and position status reports

@@ -191,7 +191,7 @@ impl PyLighterHttpClient {
     }
 }
 
-fn to_py_json<'py, T>(py: Python<'py>, value: &T) -> PyResult<PyObject>
+fn to_py_json<'py, T>(py: Python<'py>, value: &T) -> PyResult<Py<PyAny>>
 where
     T: Serialize,
 {

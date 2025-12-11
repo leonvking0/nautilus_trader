@@ -40,6 +40,7 @@ from decimal import Decimal
 
 import requests
 
+
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
@@ -57,7 +58,9 @@ MARKET_SYMBOLS = {
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Configure logging with appropriate format."""
+    """
+    Configure logging with appropriate format.
+    """
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
@@ -68,7 +71,9 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 
 
 def env(name: str, default: str | None = None) -> str:
-    """Get environment variable or raise if required."""
+    """
+    Get environment variable or raise if required.
+    """
     value = os.getenv(name, default)
     if value is None:
         raise SystemExit(f"Missing required env var {name}")
@@ -76,7 +81,9 @@ def env(name: str, default: str | None = None) -> str:
 
 
 def format_usd(value: str | Decimal | None) -> str:
-    """Format a value as USD."""
+    """
+    Format a value as USD.
+    """
     if value is None:
         return "$0.00"
     try:
@@ -86,7 +93,9 @@ def format_usd(value: str | Decimal | None) -> str:
 
 
 def get_position_side(sign: int, position_value: str | None) -> str:
-    """Determine position side from sign and value."""
+    """
+    Determine position side from sign and value.
+    """
     if position_value is None:
         return "FLAT"
     try:
@@ -102,10 +111,12 @@ def get_position_side(sign: int, position_value: str | None) -> str:
 
 
 def fetch_account(base_url: str, account_index: int, auth_token: str) -> dict:
-    """Fetch account data by index."""
+    """
+    Fetch account data by index.
+    """
     resp = requests.get(
         f"{base_url}/api/v1/account",
-        params={"by": "index", "value": account_index},
+        params={"by": "index", "value": str(account_index)},
         headers={"Authorization": f"Bearer {auth_token}"},
         timeout=15,
     )
@@ -114,7 +125,9 @@ def fetch_account(base_url: str, account_index: int, auth_token: str) -> dict:
 
 
 def fetch_order_books(base_url: str) -> list[dict]:
-    """Fetch all order book details to get market info."""
+    """
+    Fetch all order book details to get market info.
+    """
     resp = requests.get(
         f"{base_url}/api/v1/orderBooks",
         timeout=10,

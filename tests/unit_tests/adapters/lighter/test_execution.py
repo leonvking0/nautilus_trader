@@ -363,8 +363,8 @@ async def test_reconcile_positions_emits_flat_for_closed_position(
     btc_instrument,
 ):
     """
-    Test that _reconcile_positions emits a FLAT report when a requested instrument
-    has no position in the REST response (i.e., position was closed).
+    Test that _reconcile_positions emits a FLAT report when a requested instrument has
+    no position in the REST response (i.e., position was closed).
     """
     from nautilus_trader.model.enums import PositionSide
 
@@ -375,7 +375,7 @@ async def test_reconcile_positions_emits_flat_for_closed_position(
             {
                 "index": 1,
                 "positions": [],  # No positions - position was closed
-            }
+            },
         ],
     }
     exec_client._http_client.account_by_index = AsyncMock(return_value=empty_account)
@@ -397,10 +397,11 @@ async def test_full_reconciliation_emits_flat_for_cached_open_position(
     btc_instrument,
 ):
     """
-    Test that full reconciliation (instrument_ids=None) emits FLAT reports for
-    cached open positions that are no longer in the REST response.
+    Test that full reconciliation (instrument_ids=None) emits FLAT reports for cached
+    open positions that are no longer in the REST response.
 
     This covers the reconnect scenario where a position was closed while disconnected.
+
     """
     from nautilus_trader.model.enums import PositionSide
 
@@ -411,13 +412,13 @@ async def test_full_reconciliation_emits_flat_for_cached_open_position(
             {
                 "index": 1,
                 "positions": [],
-            }
+            },
         ],
     }
     exec_client._http_client.account_by_index = AsyncMock(return_value=empty_account)
 
     # Mock _get_cached_position_instruments to return BTC as having an open position
-    exec_client._get_cached_position_instruments = MagicMock(return_value={btc_instrument.id})
+    exec_client._get_cached_position_instruments = MagicMock(return_value={btc_instrument.id})  # type: ignore[method-assign]
 
     sent_reports: list = []
     exec_client._send_position_status_report = MagicMock(side_effect=sent_reports.append)
