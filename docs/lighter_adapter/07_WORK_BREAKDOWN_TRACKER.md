@@ -64,26 +64,35 @@
 
 **Definition of Done**: Position and balance tracking complete
 
-- [~] **PR4: Account Management** (In Progress)
+- [x] **PR4: Account Management**
   - [x] Account/Position models in Rust (`LighterPosition`, `LighterAccount`, `AccountDetailsResponse`)
   - [x] Account endpoint methods (`account_details`, `account_by_index` HTTP methods)
   - [x] Position reports (`generate_position_status_reports` in execution client)
   - [x] Fill reports (via `_build_reports` in execution client - completed in PR3)
   - [x] Unit tests for position report generation (5 new tests)
-  - [ ] Balance fetching (AccountState updates)
-  - [ ] Position updates (WS channel subscription)
-  - [ ] Position reconciliation on reconnect
-  - [ ] Integration test: position lifecycle
+  - [x] Position updates from fills (Lighter has no dedicated WS position channel)
+  - [x] Position reconciliation on reconnect
+  - [x] Unit tests for position updates and reconciliation (4 new tests)
+  - [ ] Balance fetching (AccountState updates) - deferred to PR5
 
 **PR4 Implementation Notes**:
-- Branch: `PR4`
-- Commit: `587242363 lighter: add account/position models and position status reports`
+- Branch: `pr3` (merged with previous work)
+- Commits:
+  - `587242363` lighter: add account/position models and position status reports
+  - (current) lighter: add position updates from fills and reconnect reconciliation
 - Files modified:
   - `crates/adapters/lighter/src/http/models.rs` - Added typed position/account structs
   - `crates/adapters/lighter/src/http/client.rs` - Added `account_details` endpoint
-  - `nautilus_trader/adapters/lighter/execution.py` - Implemented `generate_position_status_reports`
-  - `tests/unit_tests/adapters/lighter/test_execution.py` - Added position report tests
-- Tests: 45 Python tests pass, 26 Rust tests pass
+  - `nautilus_trader/adapters/lighter/execution.py`:
+    - `generate_position_status_reports()` method
+    - `_position_to_report()` helper method
+    - `_reconcile_positions()` method for REST-based reconciliation
+    - `_on_user_stream_reconnect()` callback for full reconciliation
+    - `_handle_user_stream_message()` updated to trigger position reconciliation on fills
+  - `tests/unit_tests/adapters/lighter/test_execution.py` - 13 tests total (9 position + 4 reconciliation)
+- Tests: 49 Python tests pass, 26 Rust tests pass
+- Key Design Decision: Lighter does not have a dedicated WebSocket channel for position updates.
+  Position changes are derived from order fills (REST reconciliation triggered after fills detected in WS stream).
 
 ### Milestone 5: Hardening (Week 5-6)
 

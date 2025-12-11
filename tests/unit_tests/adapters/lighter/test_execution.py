@@ -311,3 +311,190 @@ def test_position_to_report_unknown_market(exec_client: LighterExecutionClient):
     report = exec_client._position_to_report(position, filter_instrument_id=None, ts_init=1000)
 
     assert report is None
+
+
+@pytest.mark.asyncio
+async def test_reconcile_positions_calls_send_position_report(
+    exec_client: LighterExecutionClient,
+    account_fixture,
+):
+    """
+    Test that _reconcile_positions generates and sends position reports.
+    """
+    exec_client._http_client.account_by_index = AsyncMock(return_value=account_fixture)
+    sent_reports: list = []
+    exec_client._send_position_status_report = MagicMock(side_effect=sent_reports.append)
+
+    await exec_client._reconcile_positions()
+
+    # Should have sent 1 position report (from the fixture)
+    assert len(sent_reports) == 1
+
+
+@pytest.mark.asyncio
+async def test_reconcile_positions_filters_by_instrument(
+    exec_client: LighterExecutionClient,
+    account_fixture,
+    btc_instrument,
+):
+    """
+    Test that _reconcile_positions filters by instrument IDs when provided.
+    """
+    exec_client._http_client.account_by_index = AsyncMock(return_value=account_fixture)
+    sent_reports: list = []
+    exec_client._send_position_status_report = MagicMock(side_effect=sent_reports.append)
+
+    # Filter for ETH instrument (not in fixture) should send nothing
+    from nautilus_trader.model.identifiers import InstrumentId
+
+    eth_id = InstrumentId.from_str("ETH-USD-PERP.LIGHTER")
+    await exec_client._reconcile_positions(instrument_ids={eth_id})
+
+    assert len(sent_reports) == 0
+
+    # Filter for BTC instrument should send 1
+    await exec_client._reconcile_positions(instrument_ids={btc_instrument.id})
+    assert len(sent_reports) == 1
+
+
+@pytest.mark.asyncio
+async def test_reconcile_positions_emits_flat_for_closed_position(
+    exec_client: LighterExecutionClient,
+    btc_instrument,
+):
+    """
+    Test that _reconcile_positions emits a FLAT report when a requested instrument
+    has no position in the REST response (i.e., position was closed).
+    """
+    from nautilus_trader.model.enums import PositionSide
+
+    # Account with no positions (position was closed)
+    empty_account = {
+        "code": 200,
+        "accounts": [
+            {
+                "index": 1,
+                "positions": [],  # No positions - position was closed
+            }
+        ],
+    }
+    exec_client._http_client.account_by_index = AsyncMock(return_value=empty_account)
+    sent_reports: list = []
+    exec_client._send_position_status_report = MagicMock(side_effect=sent_reports.append)
+
+    # Request reconciliation for BTC (which is in provider but has no position)
+    await exec_client._reconcile_positions(instrument_ids={btc_instrument.id})
+
+    # Should emit a FLAT report for the closed position
+    assert len(sent_reports) == 1
+    assert sent_reports[0].instrument_id == btc_instrument.id
+    assert sent_reports[0].position_side == PositionSide.FLAT
+
+
+@pytest.mark.asyncio
+async def test_full_reconciliation_emits_flat_for_cached_open_position(
+    exec_client: LighterExecutionClient,
+    btc_instrument,
+):
+    """
+    Test that full reconciliation (instrument_ids=None) emits FLAT reports for
+    cached open positions that are no longer in the REST response.
+
+    This covers the reconnect scenario where a position was closed while disconnected.
+    """
+    from nautilus_trader.model.enums import PositionSide
+
+    # Empty account response (no positions)
+    empty_account = {
+        "code": 200,
+        "accounts": [
+            {
+                "index": 1,
+                "positions": [],
+            }
+        ],
+    }
+    exec_client._http_client.account_by_index = AsyncMock(return_value=empty_account)
+
+    # Mock _get_cached_position_instruments to return BTC as having an open position
+    exec_client._get_cached_position_instruments = MagicMock(return_value={btc_instrument.id})
+
+    sent_reports: list = []
+    exec_client._send_position_status_report = MagicMock(side_effect=sent_reports.append)
+
+    # Full reconciliation (instrument_ids=None)
+    await exec_client._reconcile_positions(instrument_ids=None)
+
+    # Should emit a FLAT report for the cached position that's no longer in REST
+    assert len(sent_reports) == 1
+    assert sent_reports[0].instrument_id == btc_instrument.id
+    assert sent_reports[0].position_side == PositionSide.FLAT
+
+
+def test_ws_fill_triggers_position_reconciliation(
+    loop,
+    exec_client: LighterExecutionClient,
+    btc_instrument,
+):
+    """
+    Test that receiving fills via WS triggers position reconciliation.
+    """
+    # Create a mock order with fill
+    fill_order = {
+        "order_index": 123,
+        "client_order_id": "test-fill-order",
+        "initial_base_amount": "1.0",
+        "filled_base_amount": "0.5",
+        "remaining_base_amount": "0.5",
+        "filled_quote_amount": "50000.0",
+        "is_ask": False,
+        "price": "100000.0",
+        "status": "partial",
+        "time_in_force": "good-till-time",
+    }
+
+    ws_message = {
+        "type": "update/account_all_orders",
+        "channel": "account_all_orders:1",
+        "orders": {"1": [fill_order]},
+    }
+
+    # Track calls
+    reconcile_tasks: list = []
+    original_create_task = loop.create_task
+
+    def track_create_task(coro):
+        task = original_create_task(coro)
+        reconcile_tasks.append(task)
+        return task
+
+    loop.create_task = track_create_task
+
+    exec_client._send_order_status_report = MagicMock()
+    exec_client._send_fill_report = MagicMock()
+
+    exec_client._handle_user_stream_message(ws_message)
+
+    # Should have created a task for position reconciliation (because there was a fill)
+    assert len(reconcile_tasks) >= 1
+
+
+def test_reconnect_triggers_full_reconciliation(loop, exec_client: LighterExecutionClient):
+    """
+    Test that user stream reconnection triggers full reconciliation.
+    """
+    reconcile_tasks: list = []
+    original_create_task = loop.create_task
+
+    def track_create_task(coro):
+        task = original_create_task(coro)
+        reconcile_tasks.append(task)
+        return task
+
+    loop.create_task = track_create_task
+
+    # Trigger reconnect handler
+    exec_client._on_user_stream_reconnect()
+
+    # Should have created a task for full reconciliation
+    assert len(reconcile_tasks) == 1

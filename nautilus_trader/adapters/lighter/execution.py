@@ -831,6 +831,85 @@ class LighterExecutionClient(LiveExecutionClient):
         if reports or fills:
             self._log.info("Reconciled %d open orders (fills=%d)", len(reports), len(fills))
 
+    def _get_cached_position_instruments(self) -> set[InstrumentId]:
+        """
+        Get instruments that the cache thinks have open positions.
+
+        Returns
+        -------
+        set[InstrumentId]
+            Instrument IDs for positions that are not flat in the cache.
+
+        """
+        positions = self._cache.positions(venue=self.venue)
+        return {pos.instrument_id for pos in positions if not pos.is_flat}
+
+    async def _reconcile_positions(
+        self,
+        instrument_ids: set[InstrumentId] | None = None,
+    ) -> None:
+        """
+        Reconcile positions by fetching fresh data from REST and emitting reports.
+
+        Parameters
+        ----------
+        instrument_ids : set[InstrumentId] | None
+            If provided, only reconcile positions for these instruments.
+            If None, reconcile all positions.
+
+        """
+        from nautilus_trader.core.uuid import UUID4
+        from nautilus_trader.execution.messages import GeneratePositionStatusReports
+
+        command = GeneratePositionStatusReports(
+            instrument_id=None,
+            start=None,
+            end=None,
+            command_id=UUID4(),
+            ts_init=self._clock.timestamp_ns(),
+        )
+        reports = await self.generate_position_status_reports(command)
+
+        # Track which instruments received position reports
+        reported_instruments: set[InstrumentId] = set()
+        now_ns = self._clock.timestamp_ns()
+
+        count = 0
+        for report in reports:
+            if instrument_ids is None or report.instrument_id in instrument_ids:
+                self._send_position_status_report(report)
+                reported_instruments.add(report.instrument_id)
+                count += 1
+
+        # Emit FLAT reports for instruments that had no position in REST response
+        # This handles positions that were closed (no longer in account data)
+        if instrument_ids is None:
+            # Full reconciliation: check all instruments with cached open positions
+            instruments_to_check = self._get_cached_position_instruments()
+        else:
+            # Partial reconciliation: check only requested instruments
+            instruments_to_check = instrument_ids
+
+        for instrument_id in instruments_to_check:
+            if instrument_id not in reported_instruments:
+                instrument = self._instrument_provider.find(instrument_id)
+                if instrument:
+                    flat_report = PositionStatusReport(
+                        account_id=self.account_id,
+                        instrument_id=instrument_id,
+                        position_side=PositionSide.FLAT,
+                        quantity=Quantity.zero(instrument.size_precision),
+                        report_id=UUID4(),
+                        ts_last=now_ns,
+                        ts_init=now_ns,
+                    )
+                    self._send_position_status_report(flat_report)
+                    count += 1
+                    self._log.debug(f"Emitted FLAT report for closed position: {instrument_id}")
+
+        if count > 0:
+            self._log.info("Reconciled %d position(s)", count)
+
     # ---------------------------------------------------------------------------------------------
     # WebSocket handling
     # ---------------------------------------------------------------------------------------------
@@ -855,13 +934,27 @@ class LighterExecutionClient(LiveExecutionClient):
             account_index=account_index,
             auth_provider=self._ensure_auth_token,
             handler=self._handle_user_stream_message,
-            on_reconnect=lambda: self._loop.create_task(self._reconcile_open_orders()) and None,  # type: ignore[arg-type]
+            on_reconnect=self._on_user_stream_reconnect,
         )
         try:
             await self._user_stream.connect()
         except Exception as e:  # pragma: no cover - defensive
             self._log.exception("Failed to connect user stream", e)
             self._user_stream = None
+
+    def _on_user_stream_reconnect(self) -> None:
+        """
+        Handle user stream reconnection by reconciling orders and positions.
+        """
+        self._log.info("User stream reconnected, reconciling orders and positions...")
+        self._loop.create_task(self._do_full_reconciliation())
+
+    async def _do_full_reconciliation(self) -> None:
+        """
+        Perform full reconciliation of orders and positions after reconnect.
+        """
+        await self._reconcile_open_orders()
+        await self._reconcile_positions()
 
     def _handle_user_stream_message(self, message: dict[str, Any]) -> None:
         msg_type = message.get("type")
@@ -871,6 +964,8 @@ class LighterExecutionClient(LiveExecutionClient):
         orders_by_market = message.get("orders") or {}
         if not isinstance(orders_by_market, dict):
             return
+
+        affected_instruments: set[InstrumentId] = set()
 
         for market_index_str, orders in orders_by_market.items():
             try:
@@ -891,6 +986,11 @@ class LighterExecutionClient(LiveExecutionClient):
                 self._send_order_status_report(report)
             for fill in fills:
                 self._send_fill_report(fill)
+                affected_instruments.add(fill.instrument_id)
+
+        # Reconcile positions for instruments that had fills
+        if affected_instruments:
+            self._loop.create_task(self._reconcile_positions(affected_instruments))
 
     def _instrument_for_market_index(self, market_index: int):
         lookup = getattr(self._instrument_provider, "_market_index_by_instrument", {})
