@@ -16,8 +16,10 @@
 //! HTTP client implementation for Lighter public APIs.
 
 pub mod client;
+pub mod errors;
 pub mod models;
 pub mod parse;
 
 pub use client::{LighterHttpClient, LighterInstrumentMeta};
+pub use errors::LighterHttpError;
 pub use models::OrderBookSnapshotResponse;

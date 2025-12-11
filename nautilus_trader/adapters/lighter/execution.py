@@ -54,11 +54,15 @@ from nautilus_trader.model.enums import OrderStatus
 from nautilus_trader.model.enums import OrderType
 from nautilus_trader.model.enums import PositionSide
 from nautilus_trader.model.enums import TimeInForce
+from nautilus_trader.model.identifiers import AccountId
 from nautilus_trader.model.identifiers import ClientId
 from nautilus_trader.model.identifiers import ClientOrderId
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.identifiers import TradeId
 from nautilus_trader.model.identifiers import VenueOrderId
+from nautilus_trader.model.objects import AccountBalance
+from nautilus_trader.model.objects import Currency
+from nautilus_trader.model.objects import MarginBalance
 from nautilus_trader.model.objects import Money
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
@@ -100,6 +104,12 @@ class _LighterUserStream:
             handler=self._on_message,
             heartbeat=15,
             headers=[],
+            # Exponential backoff: 1s initial, max 30s, factor 2.0, ±500ms jitter
+            reconnect_timeout_ms=15_000,
+            reconnect_delay_initial_ms=1_000,
+            reconnect_delay_max_ms=30_000,
+            reconnect_backoff_factor=2.0,
+            reconnect_jitter_ms=500,
         )
         self._client = await WebSocketClient.connect(
             config=config,
@@ -203,6 +213,7 @@ class LighterExecutionClient(LiveExecutionClient):
     async def _connect(self) -> None:
         # Ensure auth token is primed for reconciliation calls.
         self._ensure_auth_token()
+        await self._fetch_account_state()
         await self._reconcile_open_orders()
         await self._start_user_stream()
 
@@ -520,6 +531,7 @@ class LighterExecutionClient(LiveExecutionClient):
 
     async def _execute_with_retry(self, signer_fn, *, op_name: str) -> Any:
         last_error: Exception | None = None
+        base_delay_ms = self._config.retry_delay_ms
         for attempt in range(self._config.max_retries):
             nonce = await self._fetch_nonce()
             try:
@@ -529,7 +541,7 @@ class LighterExecutionClient(LiveExecutionClient):
             except Exception as e:
                 last_error = e
                 self._log.warning(f"{op_name} signing failed (attempt {attempt + 1}): {e}")
-                await asyncio.sleep(self._config.retry_delay_ms / 1000)
+                await asyncio.sleep(base_delay_ms / 1000)
                 continue
 
             try:
@@ -538,11 +550,22 @@ class LighterExecutionClient(LiveExecutionClient):
             except Exception as e:
                 last_error = e
                 lower = str(e).lower()
-                if "nonce" in lower:
+
+                # Calculate backoff delay based on error type
+                delay_ms = base_delay_ms
+                if "rate" in lower or "429" in lower:
+                    # Rate limited - use longer exponential backoff
+                    delay_ms = min(base_delay_ms * (2 ** attempt), 30_000)  # Max 30s
+                    self._log.warning(
+                        f"{op_name} rate limited (attempt {attempt + 1}), "
+                        f"backing off {delay_ms}ms: {e}",
+                    )
+                elif "nonce" in lower:
                     self._log.info(f"{op_name} retrying after nonce error: {e}")
                 else:
                     self._log.warning(f"{op_name} sendTx failed (attempt {attempt + 1}): {e}")
-                await asyncio.sleep(self._config.retry_delay_ms / 1000)
+
+                await asyncio.sleep(delay_ms / 1000)
 
         raise last_error or RuntimeError(f"{op_name} failed after retries")
 
@@ -910,6 +933,90 @@ class LighterExecutionClient(LiveExecutionClient):
         if count > 0:
             self._log.info("Reconciled %d position(s)", count)
 
+    async def _fetch_account_state(self) -> None:
+        """
+        Fetch account balance from REST and emit AccountState event.
+
+        Lighter uses USDC as the collateral currency. Account data includes:
+        - collateral: Total collateral (margin)
+        - available_balance: Free balance available for new orders
+
+        """
+        token = self._ensure_auth_token()
+        account_index = self._config.resolved_account_index
+        if account_index is None:
+            self._log.debug("Cannot fetch account state without account index")
+            return
+
+        try:
+            resp = await self._http_client.account_by_index(
+                account_index=account_index,
+                auth_token=token,
+            )
+        except Exception as e:
+            self._log.error(f"Failed to fetch account state: {e}")
+            return
+
+        accounts = resp.get("accounts", []) if isinstance(resp, dict) else getattr(resp, "accounts", [])
+        if not accounts:
+            return
+
+        account = accounts[0] if accounts else {}
+
+        # Parse collateral (total) and available_balance (free)
+        collateral_str = (
+            account.get("collateral", "0") if isinstance(account, dict) else getattr(account, "collateral", "0")
+        ) or "0"
+        available_str = (
+            account.get("available_balance", "0")
+            if isinstance(account, dict)
+            else getattr(account, "available_balance", "0")
+        ) or "0"
+
+        try:
+            collateral = Decimal(collateral_str)
+            available = Decimal(available_str)
+        except Exception:
+            self._log.warning("Failed to parse account balance values")
+            return
+
+        # Lighter uses USDC as collateral currency
+        usdc = Currency.from_str("USDC")
+        locked = max(collateral - available, Decimal(0))
+
+        account_balance = AccountBalance(
+            total=Money(collateral, usdc),
+            locked=Money(locked, usdc),
+            free=Money(available, usdc),
+        )
+
+        # Calculate total margin from position allocations
+        positions = (
+            account.get("positions", []) if isinstance(account, dict) else getattr(account, "positions", [])
+        )
+        total_margin = Decimal(0)
+        for pos in positions:
+            margin_str = (
+                pos.get("allocated_margin", "0") if isinstance(pos, dict) else getattr(pos, "allocated_margin", "0")
+            ) or "0"
+            try:
+                total_margin += Decimal(margin_str)
+            except Exception:  # noqa: S112
+                continue
+
+        margin_balance = MarginBalance(
+            initial=Money(total_margin, usdc),
+            maintenance=Money(total_margin, usdc),  # Lighter doesn't distinguish initial/maintenance
+        )
+
+        self.generate_account_state(
+            balances=[account_balance],
+            margins=[margin_balance],
+            reported=True,
+            ts_event=self._clock.timestamp_ns(),
+        )
+        self._log.debug(f"Updated account state: total={collateral} free={available} margin={total_margin}")
+
     # ---------------------------------------------------------------------------------------------
     # WebSocket handling
     # ---------------------------------------------------------------------------------------------
@@ -951,8 +1058,9 @@ class LighterExecutionClient(LiveExecutionClient):
 
     async def _do_full_reconciliation(self) -> None:
         """
-        Perform full reconciliation of orders and positions after reconnect.
+        Perform full reconciliation of orders, positions, and account state after reconnect.
         """
+        await self._fetch_account_state()
         await self._reconcile_open_orders()
         await self._reconcile_positions()
 

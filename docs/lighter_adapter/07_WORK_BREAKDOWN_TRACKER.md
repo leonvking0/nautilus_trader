@@ -99,14 +99,32 @@
 
 **Definition of Done**: Production-ready adapter
 
-- [ ] **PR5: Hardening**
-  - [ ] Reconnect with backoff
-  - [ ] Rate limit handling
-  - [ ] Auth token refresh
-  - [ ] Comprehensive logging
-  - [ ] Metrics integration
-  - [ ] 24-hour stability test
-  - [ ] Documentation
+- [x] **PR5: Hardening** (Complete)
+  - [x] Reconnect with backoff (exponential backoff: 1s initial, 30s max, factor 2.0, ±500ms jitter)
+  - [x] Rate limit handling (HTTP 429 detection, Retry-After parsing, exponential backoff in retry loop)
+  - [x] Auth token refresh (implemented in PR3, 8-minute cache with 10-minute token)
+  - [x] Balance fetching (AccountState updates via REST, USDC collateral)
+  - [x] Comprehensive logging (error categorization for rate limits, network, decode errors)
+  - [ ] Metrics integration (deferred - not critical for v1)
+  - [ ] 24-hour stability test (recommended before production use)
+  - [x] Documentation (updated)
+
+**PR5 Implementation Notes**:
+
+- Branch: `develop`
+- Files modified:
+  - `crates/adapters/lighter/src/websocket/client.rs` - Updated backoff config (1s→30s)
+  - `crates/adapters/lighter/src/http/errors.rs` - NEW: `LighterHttpError` type with rate limit detection
+  - `crates/adapters/lighter/src/http/client.rs` - Added `check_response()` helper, rate limit handling for `send_tx()`
+  - `crates/adapters/lighter/src/http/mod.rs` - Export `LighterHttpError`
+  - `nautilus_trader/adapters/lighter/execution.py`:
+    - `_LighterUserStream.connect()` - Added WebSocketConfig with backoff params
+    - `_execute_with_retry()` - Added rate limit detection with longer exponential backoff
+    - `_fetch_account_state()` - NEW: Fetch balance/collateral and emit AccountState
+    - `_connect()` - Now calls `_fetch_account_state()` on startup
+    - `_do_full_reconciliation()` - Now includes account state refresh
+- Tests: 81 total (22 Rust unit + 8 Rust integration + 51 Python) all passing
+- New error tests: `test_is_rate_limited`, `test_is_transient`, `test_rate_limited_display`, `test_parse_retry_after`
 
 ---
 

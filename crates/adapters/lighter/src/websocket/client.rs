@@ -106,9 +106,10 @@ impl LighterWebSocketClient {
             heartbeat: None,
             heartbeat_msg: None,
             ping_handler: None,
+            // Exponential backoff: 1s initial, max 30s, factor 2.0, ±500ms jitter
             reconnect_timeout_ms: Some(15_000),
-            reconnect_delay_initial_ms: Some(500),
-            reconnect_delay_max_ms: Some(10_000),
+            reconnect_delay_initial_ms: Some(1_000),
+            reconnect_delay_max_ms: Some(30_000),
             reconnect_backoff_factor: Some(2.0),
             reconnect_jitter_ms: Some(500),
             reconnect_max_attempts: None,

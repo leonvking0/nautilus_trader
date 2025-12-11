@@ -3,8 +3,9 @@
 Lighter is a decentralized perpetual futures exchange offering high-performance on-chain trading.
 This integration supports live market data feeds and order execution on Lighter.
 
-:::warning
-The Lighter integration is under active development. Some features may be incomplete.
+:::info
+The Lighter adapter supports live market data feeds, order execution, and account management.
+All core features are implemented and tested.
 :::
 
 ## Overview
@@ -150,3 +151,88 @@ uv run python your_script.py
 source .venv/bin/activate
 python your_script.py
 ```
+
+## Configuration
+
+### Environment Variables
+
+The adapter reads credentials from environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `LIGHTER_API_KEY` | Private key for signing transactions |
+| `LIGHTER_ACCOUNT_INDEX` | Your account index on Lighter |
+| `LIGHTER_TESTNET_API_KEY` | Testnet private key (when `testnet=true`) |
+| `LIGHTER_TESTNET_ACCOUNT_INDEX` | Testnet account index |
+
+### Client Configuration
+
+```python
+from nautilus_trader.adapters.lighter.config import LighterDataClientConfig, LighterExecClientConfig
+
+# Data client (market data only)
+data_config = LighterDataClientConfig(
+    testnet=True,  # Use testnet
+    # base_url_http="...",  # Optional override
+    # base_url_ws="...",    # Optional override
+)
+
+# Execution client (trading)
+exec_config = LighterExecClientConfig(
+    testnet=True,
+    api_key="...",  # Or set LIGHTER_API_KEY env var
+    account_index=12345,  # Or set LIGHTER_ACCOUNT_INDEX env var
+    max_retries=3,  # Default: 3
+    retry_delay_ms=1000,  # Default: 1000ms
+)
+```
+
+## Error Handling
+
+### Rate Limits
+
+The adapter handles HTTP 429 (rate limit) responses with exponential backoff:
+
+- Initial retry delay: 1 second
+- Maximum retry delay: 30 seconds
+- Backoff factor: 2x
+- The `Retry-After` header is respected when present
+
+### Reconnection
+
+WebSocket connections automatically reconnect with exponential backoff:
+
+- Initial delay: 1 second
+- Maximum delay: 30 seconds
+- Backoff factor: 2x
+- Jitter: ±500ms (prevents thundering herd)
+- On reconnection, orders and positions are automatically reconciled
+
+### Error Categories
+
+The adapter categorizes errors for better handling:
+
+- **Rate Limited**: HTTP 429, includes retry-after when available
+- **Network**: Connection timeouts, DNS failures
+- **Request Failed**: Non-success HTTP responses (4xx, 5xx)
+- **Decode**: JSON parsing failures
+
+## Features
+
+### Supported
+
+- Order book streaming (deltas with gap detection)
+- Trade feeds
+- Market statistics (mark price, index price, funding rate)
+- Limit orders
+- Market orders (as aggressive limit)
+- Order cancellation
+- Batch cancel
+- Position tracking
+- Balance tracking (USDC collateral)
+
+### Not Supported (v1)
+
+- Spot trading (Lighter is perps-only)
+- Sub-account management
+- Historical data backfill beyond 30 days

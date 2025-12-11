@@ -27,6 +27,7 @@ use reqwest::{Client, Proxy};
 
 use crate::common::LighterNetwork;
 use crate::data::models::LighterOrderBookDepth;
+use crate::http::errors::{LighterHttpError, parse_retry_after};
 use crate::urls::get_http_base_url;
 
 use super::models::{
@@ -237,13 +238,14 @@ impl LighterHttpClient {
     /// Submit a transaction via `/sendTx`.
     ///
     /// # Errors
-    /// Returns an error on request failure or invalid JSON.
+    /// Returns `LighterHttpError::RateLimited` if rate limited (HTTP 429).
+    /// Returns other errors on request failure or invalid JSON.
     pub async fn send_tx(
         &self,
         tx_type: u8,
         tx_info: &str,
         price_protection: Option<bool>,
-    ) -> anyhow::Result<SendTxResponse> {
+    ) -> Result<SendTxResponse, LighterHttpError> {
         let url = format!("{}/sendTx", self.base_url);
         tracing::trace!(%url, tx_type, "Submitting sendTx");
 
@@ -257,24 +259,16 @@ impl LighterHttpClient {
 
         let response = self
             .http
-            .post(url)
+            .post(&url)
             .form(&form)
             .send()
             .await
-            .context("failed to send sendTx request")?;
+            .map_err(|e| LighterHttpError::Network(e.to_string()))?;
 
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .context("failed to read sendTx response body")?;
+        let body = Self::check_response(response, "sendTx").await?;
 
-        if !status.is_success() {
-            anyhow::bail!("sendTx request failed ({status}): {body}");
-        }
-
-        let parsed: SendTxResponse =
-            serde_json::from_str(&body).context("failed to deserialize sendTx response")?;
+        let parsed: SendTxResponse = serde_json::from_str(&body)
+            .map_err(|e| LighterHttpError::Decode(format!("sendTx: {e}")))?;
 
         Ok(parsed)
     }
@@ -417,6 +411,59 @@ impl LighterHttpClient {
                 );
             }
         }
+    }
+
+    /// Check response status and return appropriate error for non-success responses.
+    ///
+    /// Returns `Ok(body)` if successful, `Err(LighterHttpError)` otherwise.
+    /// Rate limited responses (HTTP 429) are detected and returned as `LighterHttpError::RateLimited`.
+    async fn check_response(
+        response: reqwest::Response,
+        endpoint: &str,
+    ) -> Result<String, LighterHttpError> {
+        let status = response.status();
+        let status_code = status.as_u16();
+
+        // Extract Retry-After header before consuming response
+        let retry_after = response
+            .headers()
+            .get("Retry-After")
+            .and_then(|v| v.to_str().ok())
+            .and_then(parse_retry_after);
+
+        let body = response
+            .text()
+            .await
+            .map_err(|e| LighterHttpError::Network(e.to_string()))?;
+
+        if status.is_success() {
+            return Ok(body);
+        }
+
+        // Handle rate limiting (HTTP 429)
+        if status_code == 429 {
+            tracing::warn!(
+                endpoint,
+                retry_after_secs = ?retry_after,
+                "Lighter API rate limited"
+            );
+            return Err(LighterHttpError::RateLimited {
+                retry_after_secs: retry_after,
+                message: body,
+            });
+        }
+
+        // Handle other errors
+        tracing::warn!(
+            endpoint,
+            status_code,
+            body = %body,
+            "Lighter API request failed"
+        );
+        Err(LighterHttpError::RequestFailed {
+            status: status_code,
+            message: body,
+        })
     }
 }
 
