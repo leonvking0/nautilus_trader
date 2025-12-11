@@ -149,7 +149,7 @@ async def top_of_book(
                 payload = json.loads(msg)
                 if payload.get("type") == "error":
                     LOG.warning("WS error: %s", payload)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
 
     await ws_client.connect(instruments, handler)  # Pass instruments for message parsing

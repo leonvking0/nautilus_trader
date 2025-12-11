@@ -55,5 +55,5 @@ def resolve_account_index(value: int | None, *, testnet: bool) -> int | None:
 
     try:
         return int(env_value)
-    except ValueError as exc:
-        raise ValueError(f"{env_name} must be an integer if provided") from exc
+    except ValueError as e:
+        raise ValueError(f"{env_name} must be an integer if provided") from e

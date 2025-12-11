@@ -299,3 +299,103 @@ impl OrderBookSnapshotResponse {
         }
     }
 }
+
+/// Position entry for a single market within an account.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct LighterPosition {
+    /// Market index the position belongs to.
+    #[serde(alias = "market_index")]
+    pub market_id: u32,
+    /// Symbol for the market (e.g., "BTC").
+    #[serde(default)]
+    pub symbol: Option<String>,
+    /// Position sign: 1 = long, -1 = short.
+    #[serde(default)]
+    pub sign: i8,
+    /// Position size as a decimal string.
+    #[serde(default)]
+    pub position: Option<String>,
+    /// Average entry price as a decimal string.
+    #[serde(default)]
+    pub avg_entry_price: Option<String>,
+    /// Unrealized P&L as a decimal string.
+    #[serde(default)]
+    pub unrealized_pnl: Option<String>,
+    /// Realized P&L as a decimal string.
+    #[serde(default)]
+    pub realized_pnl: Option<String>,
+    /// Liquidation price as a decimal string.
+    #[serde(default)]
+    pub liquidation_price: Option<String>,
+    /// Initial margin fraction as a decimal string.
+    #[serde(default)]
+    pub initial_margin_fraction: Option<String>,
+    /// Count of open orders for this market.
+    #[serde(default)]
+    pub open_order_count: Option<i32>,
+    /// Margin mode (0 = cross, 1 = isolated).
+    #[serde(default)]
+    pub margin_mode: Option<i32>,
+    /// Allocated margin for isolated positions.
+    #[serde(default)]
+    pub allocated_margin: Option<String>,
+    /// Position notional value.
+    #[serde(default)]
+    pub position_value: Option<String>,
+}
+
+/// Full account data returned by `/account`.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct LighterAccount {
+    /// Account index (unique identifier).
+    pub index: i64,
+    /// Duplicate field returned by API - ignored in favor of `index`.
+    #[serde(default, skip_serializing)]
+    pub account_index: Option<i64>,
+    /// L1 wallet address associated with the account.
+    #[serde(default)]
+    pub l1_address: Option<String>,
+    /// Available balance for trading.
+    #[serde(default)]
+    pub available_balance: Option<String>,
+    /// Total collateral deposited.
+    #[serde(default)]
+    pub collateral: Option<String>,
+    /// Total asset value including unrealized P&L.
+    #[serde(default)]
+    pub total_asset_value: Option<String>,
+    /// Cross-margined asset value.
+    #[serde(default)]
+    pub cross_asset_value: Option<String>,
+    /// Account status (1 = active).
+    #[serde(default)]
+    pub status: Option<i32>,
+    /// Positions per market.
+    #[serde(default)]
+    pub positions: Vec<LighterPosition>,
+    /// Account type.
+    #[serde(default)]
+    pub account_type: Option<i32>,
+    /// Total order count for the account.
+    #[serde(default)]
+    pub total_order_count: Option<i32>,
+    /// Pending order count.
+    #[serde(default)]
+    pub pending_order_count: Option<i32>,
+}
+
+/// Typed response for `/account` endpoint.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AccountDetailsResponse {
+    /// Result code (200 on success).
+    pub code: i32,
+    /// Total accounts returned.
+    #[serde(default)]
+    pub total: Option<i64>,
+    /// Account entries.
+    #[serde(default)]
+    pub accounts: Vec<LighterAccount>,
+    /// Optional message field.
+    #[serde(default)]
+    pub message: Option<String>,
+}

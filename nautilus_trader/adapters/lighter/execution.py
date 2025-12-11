@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import json
 from collections import defaultdict
@@ -43,6 +44,7 @@ from nautilus_trader.execution.messages import CancelOrder
 from nautilus_trader.execution.messages import SubmitOrder
 from nautilus_trader.execution.reports import FillReport
 from nautilus_trader.execution.reports import OrderStatusReport
+from nautilus_trader.execution.reports import PositionStatusReport
 from nautilus_trader.live.execution_client import LiveExecutionClient
 from nautilus_trader.model.enums import AccountType
 from nautilus_trader.model.enums import LiquiditySide
@@ -50,6 +52,7 @@ from nautilus_trader.model.enums import OmsType
 from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import OrderStatus
 from nautilus_trader.model.enums import OrderType
+from nautilus_trader.model.enums import PositionSide
 from nautilus_trader.model.enums import TimeInForce
 from nautilus_trader.model.identifiers import ClientId
 from nautilus_trader.model.identifiers import ClientOrderId
@@ -300,10 +303,131 @@ class LighterExecutionClient(LiveExecutionClient):
         _, fills = await self._build_reports(instrument_id=command.instrument_id)
         return fills
 
-    async def generate_position_status_reports(self, command):  # pragma: no cover - PR4
-        return []
+    async def generate_position_status_reports(self, command) -> list[PositionStatusReport]:
+        """
+        Generate position status reports for reconciliation.
 
-    async def _cancel_all_orders(self, command: CancelAllOrders) -> None:
+        Fetches account data from Lighter and converts positions to reports.
+
+        """
+        token = self._ensure_auth_token()
+        account_index = self._config.resolved_account_index
+        if account_index is None:
+            self._log.warning("Cannot generate position reports without account index")
+            return []
+
+        try:
+            resp = await self._http_client.account_by_index(
+                account_index=account_index,
+                auth_token=token,
+            )
+        except Exception as e:
+            self._log.error(f"Failed to fetch account for position reports: {e}")
+            return []
+
+        accounts = resp.get("accounts", []) if isinstance(resp, dict) else getattr(resp, "accounts", [])
+        if not accounts:
+            return []
+
+        account = accounts[0] if accounts else {}
+        positions = account.get("positions", []) if isinstance(account, dict) else getattr(account, "positions", [])
+
+        reports: list[PositionStatusReport] = []
+        now_ns = self._clock.timestamp_ns()
+
+        for pos in positions:
+            report = self._position_to_report(pos, command.instrument_id, now_ns)
+            if report is not None:
+                reports.append(report)
+
+        # If a specific instrument was requested but no position found, return FLAT report
+        if command.instrument_id and not reports:
+            instrument = self._instrument_provider.find(command.instrument_id)
+            if instrument:
+                reports.append(
+                    PositionStatusReport(
+                        account_id=self.account_id,
+                        instrument_id=command.instrument_id,
+                        position_side=PositionSide.FLAT,
+                        quantity=Quantity.zero(instrument.size_precision),
+                        report_id=UUID4(),
+                        ts_last=now_ns,
+                        ts_init=now_ns,
+                    ),
+                )
+
+        return reports
+
+    def _position_to_report(
+        self,
+        pos: dict[str, Any] | Any,
+        filter_instrument_id: InstrumentId | None,
+        ts_init: int,
+    ) -> PositionStatusReport | None:
+        """
+        Convert a Lighter position entry to a PositionStatusReport.
+
+        Returns None if the position should be skipped (zero size or filtered out).
+
+        """
+        market_id = pos.get("market_id") if isinstance(pos, dict) else getattr(pos, "market_id", None)
+        if market_id is None:
+            return None
+
+        # Find the instrument for this market
+        instrument = self._instrument_for_market_index(market_id)
+        if instrument is None:
+            self._log.debug(f"Skipping position for unknown market_id {market_id}")
+            return None
+
+        # Apply instrument filter if specified
+        if filter_instrument_id and instrument.id != filter_instrument_id:
+            return None
+
+        # Parse position size
+        position_str = (
+            pos.get("position", "0") if isinstance(pos, dict) else getattr(pos, "position", "0")
+        ) or "0"
+        try:
+            position_dec = Decimal(position_str)
+        except Exception:
+            position_dec = Decimal(0)
+
+        # Parse sign: 1 = long, -1 = short, 0 = flat
+        sign = pos.get("sign", 0) if isinstance(pos, dict) else getattr(pos, "sign", 0)
+
+        # Determine position side and quantity
+        if position_dec == 0:
+            position_side = PositionSide.FLAT
+            quantity = Quantity.zero(instrument.size_precision)
+        elif sign >= 0:
+            position_side = PositionSide.LONG
+            quantity = Quantity.from_str(str(abs(position_dec)))
+        else:
+            position_side = PositionSide.SHORT
+            quantity = Quantity.from_str(str(abs(position_dec)))
+
+        # Parse average entry price
+        avg_entry_str = (
+            pos.get("avg_entry_price") if isinstance(pos, dict) else getattr(pos, "avg_entry_price", None)
+        )
+        avg_px_open: Decimal | None = None
+        if avg_entry_str:
+            with contextlib.suppress(Exception):
+                avg_px_open = Decimal(avg_entry_str)
+
+        return PositionStatusReport(
+            account_id=self.account_id,
+            instrument_id=instrument.id,
+            position_side=position_side,
+            quantity=quantity,
+            report_id=UUID4(),
+            ts_last=ts_init,
+            ts_init=ts_init,
+            avg_px_open=avg_px_open,
+        )
+
+    async def _cancel_all_orders(self, command: CancelAllOrders) -> None:  # noqa: C901
         # Placeholder: loop through active orders via REST until WS schema is known.
         token = self._ensure_auth_token()
         if not token:
@@ -354,9 +478,9 @@ class LighterExecutionClient(LiveExecutionClient):
                         continue
                     coi = self._client_order_index(client_order_id)
                     await self._execute_with_retry(
-                        lambda nonce: self._signer.sign_cancel_order(
-                            market_index=market_index,
-                            order_index=coi,
+                        lambda nonce, mi=market_index, oi=coi: self._signer.sign_cancel_order(
+                            market_index=mi,
+                            order_index=oi,
                             nonce=nonce,
                         ),
                         op_name="cancel_all",
@@ -402,22 +526,22 @@ class LighterExecutionClient(LiveExecutionClient):
                 signed = signer_fn(nonce)
                 if asyncio.iscoroutine(signed):
                     signed = await signed
-            except Exception as exc:
-                last_error = exc
-                self._log.warning(f"{op_name} signing failed (attempt {attempt + 1}): {exc}")
+            except Exception as e:
+                last_error = e
+                self._log.warning(f"{op_name} signing failed (attempt {attempt + 1}): {e}")
                 await asyncio.sleep(self._config.retry_delay_ms / 1000)
                 continue
 
             try:
                 await self._post_send_tx(signed.tx_type, signed.tx_info)
                 return signed
-            except Exception as exc:
-                last_error = exc
-                lower = str(exc).lower()
+            except Exception as e:
+                last_error = e
+                lower = str(e).lower()
                 if "nonce" in lower:
-                    self._log.info(f"{op_name} retrying after nonce error: {exc}")
+                    self._log.info(f"{op_name} retrying after nonce error: {e}")
                 else:
-                    self._log.warning(f"{op_name} sendTx failed (attempt {attempt + 1}): {exc}")
+                    self._log.warning(f"{op_name} sendTx failed (attempt {attempt + 1}): {e}")
                 await asyncio.sleep(self._config.retry_delay_ms / 1000)
 
         raise last_error or RuntimeError(f"{op_name} failed after retries")
@@ -428,8 +552,8 @@ class LighterExecutionClient(LiveExecutionClient):
             return self._auth_token
         try:
             token = self._signer.auth_token()
-        except SignerError as exc:
-            self._log.warning(f"Failed to refresh auth token: {exc}")
+        except SignerError as e:
+            self._log.warning(f"Failed to refresh auth token: {e}")
             return None
 
         # signer default expiry is 10 minutes; refresh 2 minutes early.
@@ -670,7 +794,7 @@ class LighterExecutionClient(LiveExecutionClient):
         if callable(converter):
             try:
                 return converter(price)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
         scale = self._price_scale(instrument)
         return int(Decimal(str(price)) * (Decimal(10) ** scale))
@@ -693,7 +817,7 @@ class LighterExecutionClient(LiveExecutionClient):
         if callable(converter):
             try:
                 return converter(quantity)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
         scale = self._size_scale(instrument)
         return int(Decimal(str(quantity)) * (Decimal(10) ** scale))
@@ -706,6 +830,85 @@ class LighterExecutionClient(LiveExecutionClient):
             self._send_fill_report(fill)
         if reports or fills:
             self._log.info("Reconciled %d open orders (fills=%d)", len(reports), len(fills))
+
+    def _get_cached_position_instruments(self) -> set[InstrumentId]:
+        """
+        Get instruments that the cache thinks have open positions.
+
+        Returns
+        -------
+        set[InstrumentId]
+            Instrument IDs for positions that are not flat in the cache.
+
+        """
+        positions = self._cache.positions(venue=self.venue)
+        return {pos.instrument_id for pos in positions if not pos.is_flat}
+
+    async def _reconcile_positions(
+        self,
+        instrument_ids: set[InstrumentId] | None = None,
+    ) -> None:
+        """
+        Reconcile positions by fetching fresh data from REST and emitting reports.
+
+        Parameters
+        ----------
+        instrument_ids : set[InstrumentId] | None
+            If provided, only reconcile positions for these instruments.
+            If None, reconcile all positions.
+
+        """
+        from nautilus_trader.core.uuid import UUID4
+        from nautilus_trader.execution.messages import GeneratePositionStatusReports
+
+        command = GeneratePositionStatusReports(
+            instrument_id=None,
+            start=None,
+            end=None,
+            command_id=UUID4(),
+            ts_init=self._clock.timestamp_ns(),
+        )
+        reports = await self.generate_position_status_reports(command)
+
+        # Track which instruments received position reports
+        reported_instruments: set[InstrumentId] = set()
+        now_ns = self._clock.timestamp_ns()
+
+        count = 0
+        for report in reports:
+            if instrument_ids is None or report.instrument_id in instrument_ids:
+                self._send_position_status_report(report)
+                reported_instruments.add(report.instrument_id)
+                count += 1
+
+        # Emit FLAT reports for instruments that had no position in REST response
+        # This handles positions that were closed (no longer in account data)
+        if instrument_ids is None:
+            # Full reconciliation: check all instruments with cached open positions
+            instruments_to_check = self._get_cached_position_instruments()
+        else:
+            # Partial reconciliation: check only requested instruments
+            instruments_to_check = instrument_ids
+
+        for instrument_id in instruments_to_check:
+            if instrument_id not in reported_instruments:
+                instrument = self._instrument_provider.find(instrument_id)
+                if instrument:
+                    flat_report = PositionStatusReport(
+                        account_id=self.account_id,
+                        instrument_id=instrument_id,
+                        position_side=PositionSide.FLAT,
+                        quantity=Quantity.zero(instrument.size_precision),
+                        report_id=UUID4(),
+                        ts_last=now_ns,
+                        ts_init=now_ns,
+                    )
+                    self._send_position_status_report(flat_report)
+                    count += 1
+                    self._log.debug(f"Emitted FLAT report for closed position: {instrument_id}")
+
+        if count > 0:
+            self._log.info("Reconciled %d position(s)", count)
 
     # ---------------------------------------------------------------------------------------------
     # WebSocket handling
@@ -731,13 +934,27 @@ class LighterExecutionClient(LiveExecutionClient):
             account_index=account_index,
             auth_provider=self._ensure_auth_token,
             handler=self._handle_user_stream_message,
-            on_reconnect=lambda: self._loop.create_task(self._reconcile_open_orders()) and None,  # type: ignore[arg-type]
+            on_reconnect=self._on_user_stream_reconnect,
         )
         try:
             await self._user_stream.connect()
         except Exception as e:  # pragma: no cover - defensive
             self._log.exception("Failed to connect user stream", e)
             self._user_stream = None
+
+    def _on_user_stream_reconnect(self) -> None:
+        """
+        Handle user stream reconnection by reconciling orders and positions.
+        """
+        self._log.info("User stream reconnected, reconciling orders and positions...")
+        self._loop.create_task(self._do_full_reconciliation())
+
+    async def _do_full_reconciliation(self) -> None:
+        """
+        Perform full reconciliation of orders and positions after reconnect.
+        """
+        await self._reconcile_open_orders()
+        await self._reconcile_positions()
 
     def _handle_user_stream_message(self, message: dict[str, Any]) -> None:
         msg_type = message.get("type")
@@ -748,10 +965,12 @@ class LighterExecutionClient(LiveExecutionClient):
         if not isinstance(orders_by_market, dict):
             return
 
+        affected_instruments: set[InstrumentId] = set()
+
         for market_index_str, orders in orders_by_market.items():
             try:
                 market_index = int(market_index_str)
-            except Exception:
+            except Exception:  # noqa: S112
                 continue
 
             instrument = self._instrument_for_market_index(market_index)
@@ -767,6 +986,11 @@ class LighterExecutionClient(LiveExecutionClient):
                 self._send_order_status_report(report)
             for fill in fills:
                 self._send_fill_report(fill)
+                affected_instruments.add(fill.instrument_id)
+
+        # Reconcile positions for instruments that had fills
+        if affected_instruments:
+            self._loop.create_task(self._reconcile_positions(affected_instruments))
 
     def _instrument_for_market_index(self, market_index: int):
         lookup = getattr(self._instrument_provider, "_market_index_by_instrument", {})
@@ -774,7 +998,7 @@ class LighterExecutionClient(LiveExecutionClient):
             if idx == market_index:
                 try:
                     instrument_id = InstrumentId.from_str(instrument_key)
-                except Exception:
+                except Exception:  # noqa: S112
                     continue
 
                 instrument = self._instrument_provider.find(instrument_id)
@@ -790,7 +1014,7 @@ def _get(order: Any, *keys: str, default=None):
         if hasattr(order, key):
             try:
                 return getattr(order, key)
-            except Exception:  # pragma: no cover - defensive
+            except Exception:  # noqa: S112  # pragma: no cover - defensive
                 continue
     return default
 

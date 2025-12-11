@@ -53,7 +53,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 from nautilus_trader.adapters.lighter.constants import LIGHTER_MAINNET_HTTP_BASE  # noqa: E402
-from nautilus_trader.adapters.lighter.constants import LIGHTER_TESTNET_HTTP_BASE
+from nautilus_trader.adapters.lighter.constants import LIGHTER_TESTNET_HTTP_BASE  # noqa: E402
 from nautilus_trader.adapters.lighter.signer import LighterSigner  # noqa: E402
 
 

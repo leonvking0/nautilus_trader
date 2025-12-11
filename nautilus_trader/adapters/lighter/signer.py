@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-_DEFAULT_SIGNER_ROOT = Path("/tmp/lighter-python/lighter/signers")
+_DEFAULT_SIGNER_ROOT = Path("/tmp/lighter-python/lighter/signers")  # noqa: S108
 
 
 class SignerError(Exception):
