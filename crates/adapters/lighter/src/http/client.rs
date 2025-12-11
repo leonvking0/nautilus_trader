@@ -30,8 +30,9 @@ use crate::data::models::LighterOrderBookDepth;
 use crate::urls::get_http_base_url;
 
 use super::models::{
-    AccountActiveOrdersResponse, AccountResponse, LighterOrderBook, NextNonceResponse,
-    OrderBookSnapshotResponse, OrderBooksResponse, SendTxResponse,
+    AccountActiveOrdersResponse, AccountDetailsResponse, AccountResponse, LighterAccount,
+    LighterOrderBook, NextNonceResponse, OrderBookSnapshotResponse, OrderBooksResponse,
+    SendTxResponse,
 };
 use super::parse::{LighterInstrumentDef, ParseReport};
 use super::parse::{instruments_from_defs, parse_instrument_defs};
@@ -319,7 +320,7 @@ impl LighterHttpClient {
         Ok(parsed)
     }
 
-    /// Fetch account details by index.
+    /// Fetch account details by index (legacy, returns raw JSON values).
     ///
     /// # Errors
     /// Returns an error on request failure or invalid JSON.
@@ -359,6 +360,48 @@ impl LighterHttpClient {
             serde_json::from_str(&body).context("failed to deserialize account response")?;
 
         Ok(parsed)
+    }
+
+    /// Fetch typed account details by index, returning structured positions.
+    ///
+    /// # Errors
+    /// Returns an error on request failure or invalid JSON.
+    pub async fn account_details(
+        &self,
+        account_index: i64,
+        auth_token: Option<&str>,
+    ) -> anyhow::Result<Option<LighterAccount>> {
+        let url = format!("{}/account", self.base_url);
+        tracing::trace!(%url, account_index, "Requesting account details");
+
+        let mut request = self
+            .http
+            .get(&url)
+            .query(&[("by", "index"), ("value", &account_index.to_string())]);
+
+        if let Some(token) = auth_token {
+            request = request.header("Authorization", token);
+        }
+
+        let response = request
+            .send()
+            .await
+            .context("failed to send account details request")?;
+
+        let status = response.status();
+        let body = response
+            .text()
+            .await
+            .context("failed to read account details response body")?;
+
+        if !status.is_success() {
+            anyhow::bail!("account details request failed ({status}): {body}");
+        }
+
+        let parsed: AccountDetailsResponse = serde_json::from_str(&body)
+            .context("failed to deserialize account details response")?;
+
+        Ok(parsed.accounts.into_iter().next())
     }
 
     fn cache_instrument_meta(&self, defs: &[LighterInstrumentDef]) {
@@ -465,6 +508,28 @@ mod tests {
         let resp: AccountActiveOrdersResponse = serde_json::from_value(body).unwrap();
         assert_eq!(resp.code, 200);
         assert_eq!(resp.orders.len(), 2);
+    }
+
+    #[rstest::rstest]
+    fn parses_account_details_fixture() {
+        let value: Value = serde_json::from_str(
+            &std::fs::read_to_string(fixture("mainnet_account_index_659514.json")).unwrap(),
+        )
+        .unwrap();
+        let body = value["response"]["body"].clone();
+        let resp: AccountDetailsResponse = serde_json::from_value(body).unwrap();
+        assert_eq!(resp.code, 200);
+        assert_eq!(resp.accounts.len(), 1);
+
+        let account = &resp.accounts[0];
+        assert_eq!(account.index, 659514);
+        assert_eq!(account.collateral.as_deref(), Some("1000.167669"));
+        assert_eq!(account.positions.len(), 1);
+
+        let position = &account.positions[0];
+        assert_eq!(position.market_id, 1);
+        assert_eq!(position.symbol.as_deref(), Some("BTC"));
+        assert_eq!(position.sign, 1);
     }
 
     fn fixture_path() -> PathBuf {

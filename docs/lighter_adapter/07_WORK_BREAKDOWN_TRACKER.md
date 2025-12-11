@@ -64,13 +64,26 @@
 
 **Definition of Done**: Position and balance tracking complete
 
-- [ ] **PR4: Account Management**
-  - [ ] Balance fetching
-  - [ ] Position reports
-  - [ ] Position updates (WS)
-  - [ ] Fill reports
-  - [ ] Reconciliation logic
+- [~] **PR4: Account Management** (In Progress)
+  - [x] Account/Position models in Rust (`LighterPosition`, `LighterAccount`, `AccountDetailsResponse`)
+  - [x] Account endpoint methods (`account_details`, `account_by_index` HTTP methods)
+  - [x] Position reports (`generate_position_status_reports` in execution client)
+  - [x] Fill reports (via `_build_reports` in execution client - completed in PR3)
+  - [x] Unit tests for position report generation (5 new tests)
+  - [ ] Balance fetching (AccountState updates)
+  - [ ] Position updates (WS channel subscription)
+  - [ ] Position reconciliation on reconnect
   - [ ] Integration test: position lifecycle
+
+**PR4 Implementation Notes**:
+- Branch: `PR4`
+- Commit: `587242363 lighter: add account/position models and position status reports`
+- Files modified:
+  - `crates/adapters/lighter/src/http/models.rs` - Added typed position/account structs
+  - `crates/adapters/lighter/src/http/client.rs` - Added `account_details` endpoint
+  - `nautilus_trader/adapters/lighter/execution.py` - Implemented `generate_position_status_reports`
+  - `tests/unit_tests/adapters/lighter/test_execution.py` - Added position report tests
+- Tests: 45 Python tests pass, 26 Rust tests pass
 
 ### Milestone 5: Hardening (Week 5-6)
 
@@ -149,6 +162,9 @@ uv run pytest tests/unit_tests/adapters/lighter/ tests/integration_tests/adapter
 # Config tests (PR0)
 uv run pytest tests/unit_tests/adapters/lighter/test_config.py -v
 
+# Provider tests (PR1)
+uv run pytest tests/unit_tests/adapters/lighter/test_providers.py -v
+
 # Data client tests (PR2)
 uv run pytest tests/integration_tests/adapters/lighter/test_data_client.py -v
 
@@ -157,6 +173,12 @@ uv run pytest tests/integration_tests/adapters/lighter/test_order_book_sync.py -
 
 # Message parsing tests (PR2)
 uv run pytest tests/integration_tests/adapters/lighter/test_parsing.py -v
+
+# Execution client tests (PR3/PR4)
+uv run pytest tests/unit_tests/adapters/lighter/test_execution.py -v
+
+# Execution lifecycle tests (PR3)
+uv run pytest tests/integration_tests/adapters/lighter/test_execution_lifecycle.py -v
 ```
 
 ---

@@ -203,3 +203,111 @@ def test_private_ws_order_update(exec_client: LighterExecutionClient, private_ws
     assert len(reports) == 1
     assert reports[0].order_status == OrderStatus.CANCELED
     assert not fills
+
+
+@pytest.fixture
+def account_fixture():
+    with open("tests/test_data/lighter/http/mainnet_account_index_659514.json") as f:
+        fixture = json.load(f)
+    return fixture["response"]["body"]
+
+
+@pytest.mark.asyncio
+async def test_generate_position_status_reports(exec_client: LighterExecutionClient, account_fixture):
+    """
+    Test that position status reports are generated from account data.
+    """
+    from nautilus_trader.model.enums import PositionSide
+
+    exec_client._http_client.account_by_index = AsyncMock(return_value=account_fixture)
+
+    class FakeCommand:
+        instrument_id = None
+
+    reports = await exec_client.generate_position_status_reports(FakeCommand())
+
+    # The fixture has 1 position for BTC market with position=0 (should be FLAT)
+    assert len(reports) == 1
+    report = reports[0]
+    assert report.position_side == PositionSide.FLAT
+    assert report.quantity.as_decimal() == Decimal(0)
+
+
+def test_position_to_report_long_position(exec_client: LighterExecutionClient, btc_instrument):
+    """
+    Test that a long position is correctly converted to a report.
+    """
+    from nautilus_trader.model.enums import PositionSide
+
+    position = {
+        "market_id": 1,
+        "symbol": "BTC",
+        "sign": 1,
+        "position": "1.25000",
+        "avg_entry_price": "95000.0",
+    }
+
+    report = exec_client._position_to_report(position, filter_instrument_id=None, ts_init=1000)
+
+    assert report is not None
+    assert report.position_side == PositionSide.LONG
+    assert report.quantity.as_decimal() == Decimal("1.25")
+    assert report.avg_px_open == Decimal("95000.0")
+
+
+def test_position_to_report_short_position(exec_client: LighterExecutionClient, btc_instrument):
+    """
+    Test that a short position is correctly converted to a report.
+    """
+    from nautilus_trader.model.enums import PositionSide
+
+    position = {
+        "market_id": 1,
+        "symbol": "BTC",
+        "sign": -1,
+        "position": "0.50000",
+        "avg_entry_price": "92500.0",
+    }
+
+    report = exec_client._position_to_report(position, filter_instrument_id=None, ts_init=1000)
+
+    assert report is not None
+    assert report.position_side == PositionSide.SHORT
+    assert report.quantity.as_decimal() == Decimal("0.5")
+    assert report.avg_px_open == Decimal("92500.0")
+
+
+def test_position_to_report_filters_by_instrument(exec_client: LighterExecutionClient, btc_instrument):
+    """
+    Test that positions are filtered by instrument ID.
+    """
+    from nautilus_trader.model.identifiers import InstrumentId
+
+    position = {
+        "market_id": 1,
+        "symbol": "BTC",
+        "sign": 1,
+        "position": "1.0",
+    }
+
+    # Filter for a different instrument should return None
+    other_instrument_id = InstrumentId.from_str("ETH-USD-PERP.LIGHTER")
+    report = exec_client._position_to_report(position, filter_instrument_id=other_instrument_id, ts_init=1000)
+
+    assert report is None
+
+
+def test_position_to_report_unknown_market(exec_client: LighterExecutionClient):
+    """
+    Test that unknown market IDs return None.
+    """
+    position = {
+        "market_id": 999,  # Unknown market
+        "symbol": "UNKNOWN",
+        "sign": 1,
+        "position": "1.0",
+    }
+
+    report = exec_client._position_to_report(position, filter_instrument_id=None, ts_init=1000)
+
+    assert report is None
